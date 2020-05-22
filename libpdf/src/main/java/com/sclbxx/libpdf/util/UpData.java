@@ -47,10 +47,10 @@ public class UpData {
                     destroy(context);
                 }
 
-                @Override
-                public void onNullBinding(ComponentName name) {
-//                    ToastUtils.showToast("onNullBinding");
-                }
+//                @Override
+//                public void onNullBinding(ComponentName name) {
+////                    ToastUtils.showToast("onNullBinding");
+//                }
 
                 @Override
                 public void onBindingDied(ComponentName name) {
