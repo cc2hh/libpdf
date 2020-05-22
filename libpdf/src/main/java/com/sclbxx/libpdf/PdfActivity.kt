@@ -12,7 +12,6 @@ import com.google.gson.Gson
 import com.sclbxx.libpdf.base.BaseActivity
 import com.sclbxx.libpdf.http.Network
 import com.sclbxx.libpdf.pojo.Event
-import com.sclbxx.libpdf.pojo.ToPdf
 import com.sclbxx.libpdf.pojo.param.ToPdfParam
 import com.sclbxx.libpdf.pojo.param.TokenParam
 import com.sclbxx.libpdf.util.*
@@ -34,11 +33,17 @@ import zlc.season.rxdownload4.task.Task
 import java.io.File
 import java.util.*
 
-class MainActivity : BaseActivity() {
+/**
+ *  pdf查看界面
+ * @Author cc
+ * @Date 2020/5/22 11:43
+ * @version 1.0
+ */
+class PdfActivity : BaseActivity() {
 
     private val CODE_PERMISSION_READ = 0
-    private lateinit var _cache: ACache
     private var disposable: Disposable? = null
+    private lateinit var _cache: ACache
     private lateinit var pdfUrl: String
     // 转换pdf失败重试次数
     private var retryIndex = 0
@@ -46,7 +51,7 @@ class MainActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-        _cache = ACache.get(this, "libpdf")
+        _cache = ACache.get(this)
         requestPermissions(CODE_PERMISSION_READ, "存储", Manifest.permission.READ_EXTERNAL_STORAGE)
 
     }
@@ -271,9 +276,15 @@ class MainActivity : BaseActivity() {
         // 强制下载
         private const val isDown = "isDown"
 
-        // 跳转方法
-        fun start(ctx: Context, url: String, path: String, down: Boolean=false) {
-            val intent = Intent(ctx, MainActivity::class.java)
+        /**
+         *  跳转
+         *
+         * @param url 文件本地路径或网络链接
+         * @param path 转换后的pdf文件本地保存路径
+         * @param down 强制下载文件
+         */
+        fun start(ctx: Context, url: String, path: String, down: Boolean = false) {
+            val intent = Intent(ctx, PdfActivity::class.java)
             intent.putExtra(mUrl, url)
             intent.putExtra(savePath, path)
             intent.putExtra(isDown, down)

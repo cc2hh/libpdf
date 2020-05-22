@@ -43,9 +43,10 @@ public class ACache {
     private static final int MAX_COUNT = Integer.MAX_VALUE; // 不限制存放数据的数量
     private static Map<String, ACache> mInstanceMap = new HashMap<String, ACache>();
     private ACacheManager mCache;
+    private static final String NAME="libpdf";
 
     public static ACache get(Context ctx) {
-        return get(ctx, "ACache");
+        return get(ctx, NAME);
     }
 
     public static ACache get(Context ctx, String cacheName) {
@@ -58,7 +59,7 @@ public class ACache {
     }
 
     public static ACache get(Context ctx, long max_zise, int max_count) {
-        File f = new File(ctx.getCacheDir(), "ACache");
+        File f = new File(ctx.getCacheDir(), NAME);
         return get(f, max_zise, max_count);
     }
 

@@ -1,5 +1,6 @@
-# mp3Covert
-[![](https://jitpack.io/v/cc2hh/mp3Covert.svg)](https://jitpack.io/#cc2hh/mp3Covert)
+# libpdf
+
+[![](https://jitpack.io/v/cc2hh/libpdf.svg)](https://jitpack.io/#cc2hh/libpdf)
 
 How to
 To get a Git project into your build:
@@ -21,5 +22,5 @@ Add it in your root build.gradle at the end of repositories:
 Step 2. Add the dependency
 
 	dependencies {
-	        implementation 'com.github.cc2hh:mp3Covert:1.0.0'
+	        implementation 'com.github.cc2hh:libpdf:1.0'
 	}

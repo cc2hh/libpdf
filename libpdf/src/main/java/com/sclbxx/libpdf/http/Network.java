@@ -176,7 +176,7 @@ public class Network {
             Log.v("Network", "--------------------------------------------开始打印返回数据----------------------------------------------------");
             String msg = buffer.clone().readString(charset);
             if (msg != null && msg.contains("远程服务繁忙")) {
-                ACache.get(mContext,"libpdf").put("retry", "retry");
+                ACache.get(mContext).put("retry", "retry");
             }
             Log.v("Network", msg);
 //            KLog.json(buffer.clone().readString(charset));

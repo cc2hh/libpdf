@@ -7,7 +7,7 @@
 
     <application>
         <activity
-            android:name=".MainActivity"
+            android:name=".PdfActivity"
             android:configChanges="orientation|keyboardHidden" />
     </application>
 

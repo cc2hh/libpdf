@@ -379,7 +379,7 @@ public class OSSPutObject {
      */
     public Observable<OSSPutObject> connOssKey() {
         Map<String, Object> params = new HashMap();
-        ACache aCache = ACache.get(context,"libpdf");
+        ACache aCache = ACache.get(context);
         params.put("id", aCache.getAsString("userId"));
         params.put("fkSchoolId", aCache.getAsString("schoolId"));
         return Network.getAPI(context).upLoadLogALiYun(params)
