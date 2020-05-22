@@ -24,7 +24,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
-import kotlinx.android.synthetic.main.activity_main.*
+import kotlinx.android.synthetic.main.libpdf_activity_pdf.*
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import zlc.season.rxdownload4.download
@@ -50,7 +50,7 @@ class PdfActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_main)
+        setContentView(R.layout.libpdf_activity_pdf)
         _cache = ACache.get(this)
         requestPermissions(CODE_PERMISSION_READ, "存储", Manifest.permission.READ_EXTERNAL_STORAGE)
 
@@ -93,7 +93,7 @@ class PdfActivity : BaseActivity() {
         // 如果文件已存在
         if (!isDown && file.exists()) {
             hideProgress()
-            main_pdf.fromFile(file).load()
+            libpdf_main_pdf.fromFile(file).load()
             return
         }
 
@@ -250,7 +250,7 @@ class PdfActivity : BaseActivity() {
                 .subscribeBy(onNext = {
                 }, onComplete = {
                     hideProgress()
-                    main_pdf.fromFile(pdfUrl.file()).load()
+                    libpdf_main_pdf.fromFile(pdfUrl.file()).load()
                     if (!url.startsWith("http")) {
                         FileUtil.deleteFile(url)
                     }
@@ -284,10 +284,10 @@ class PdfActivity : BaseActivity() {
          * @param path 转换后的pdf文件本地保存路径
          * @param down 强制下载文件
          */
-        fun start(ctx: Context, url: String, path: String?, down: Boolean = false) {
+        fun start(ctx: Context, url: String, path: String? = null, down: Boolean = false) {
             val intent = Intent(ctx, PdfActivity::class.java)
             intent.putExtra(mUrl, url)
-            intent.putExtra(savePath, path?:FileUtil.getDirPath())
+            intent.putExtra(savePath, path ?: FileUtil.getDirPath() + "/pdf/")
             intent.putExtra(isDown, down)
             ctx.startActivity(intent)
         }

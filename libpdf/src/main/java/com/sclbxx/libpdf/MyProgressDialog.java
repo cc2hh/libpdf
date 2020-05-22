@@ -24,7 +24,7 @@ public class MyProgressDialog {
             progressDialog = new ProgressDialog(context);
             progressDialog.setCanceledOnTouchOutside(false);
             progressDialog.show();
-            progressDialog.setContentView(R.layout.progress_load);
+            progressDialog.setContentView(R.layout.libpdf_progress_load);
             mIsShow = true;
         }
         return progressDialog;

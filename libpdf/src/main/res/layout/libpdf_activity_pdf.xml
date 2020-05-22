@@ -7,7 +7,7 @@
     tools:context=".PdfActivity">
 
     <com.github.barteksc.pdfviewer.PDFView
-        android:id="@+id/main_pdf"
+        android:id="@+id/libpdf_main_pdf"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
 </LinearLayout>
