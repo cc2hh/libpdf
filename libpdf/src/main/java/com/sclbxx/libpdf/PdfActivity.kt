@@ -48,7 +48,6 @@ class PdfActivity : BaseActivity() {
     // 转换pdf失败重试次数
     private var retryIndex = 0
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
