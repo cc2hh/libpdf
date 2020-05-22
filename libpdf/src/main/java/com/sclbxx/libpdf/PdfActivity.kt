@@ -77,6 +77,7 @@ class PdfActivity : BaseActivity() {
         }
         UpData.updateByService(this)
         initData()
+
     }
 
     /**
