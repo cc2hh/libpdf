@@ -291,5 +291,6 @@ class PdfActivity : BaseActivity() {
             intent.putExtra(isDown, down)
             ctx.startActivity(intent)
         }
+
     }
 }
