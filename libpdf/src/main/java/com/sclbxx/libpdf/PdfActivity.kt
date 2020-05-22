@@ -241,6 +241,7 @@ class PdfActivity : BaseActivity() {
      *  下载文件
      *
      */
+
     private fun downloadFile(pdfUrl: String) {
         val savePath = intent.getStringExtra(savePath)
         val url = intent.getStringExtra(mUrl)
