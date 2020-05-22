@@ -1,5 +1,6 @@
 package com.sclbxx.libpdf.util
 
+import android.os.Environment
 import java.io.File
 
 /**
@@ -12,6 +13,18 @@ import java.io.File
 class FileUtil {
 
     companion object {
+
+        /**
+         * 获取根路径
+         */
+        fun getDirPath(): String {
+            return if (Environment.MEDIA_MOUNTED == Environment
+                            .getExternalStorageState() || !Environment.isExternalStorageRemovable()) {
+                Environment.getExternalStorageDirectory().path
+            } else {
+                ""
+            }
+        }
 
         /**
          *  检测是否是能打开文件类型

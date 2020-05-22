@@ -284,10 +284,10 @@ class PdfActivity : BaseActivity() {
          * @param path 转换后的pdf文件本地保存路径
          * @param down 强制下载文件
          */
-        fun start(ctx: Context, url: String, path: String, down: Boolean = false) {
+        fun start(ctx: Context, url: String, path: String?, down: Boolean = false) {
             val intent = Intent(ctx, PdfActivity::class.java)
             intent.putExtra(mUrl, url)
-            intent.putExtra(savePath, path)
+            intent.putExtra(savePath, path?:FileUtil.getDirPath())
             intent.putExtra(isDown, down)
             ctx.startActivity(intent)
         }
