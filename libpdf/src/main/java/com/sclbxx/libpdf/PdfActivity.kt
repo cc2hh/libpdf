@@ -93,16 +93,7 @@ class PdfActivity : BaseActivity() {
         // 转换后的文件
         val file = File("$savePath$saveName.pdf")
 
-        // 如果文件已存在
-        if (!isDown && file.exists()) {
-            hideProgress()
-            libpdf_main_pdf.fromFile(file)
-                    .pageSnap(true)
-                    .linkHandler {  }
-                    .load()
-            return
-        }
-
+        // 本地文件不存在
         if (!url.startsWith("http") && !File(url).exists()) {
             toast("文件不存在")
             finish()
@@ -121,6 +112,36 @@ class PdfActivity : BaseActivity() {
                         finish()
                         false
                     }
+                }
+                .filter {
+                    // 如果文件已存在
+                    if (file.exists()) {
+                        // 强制下载
+                        if (isDown) {
+                            // 如果源文件就是pdf
+                            if (url.endsWith(".pdf")) {
+                                downloadFile(url)
+                                false
+                            }
+                        } else {
+                            loadPdf(file)
+                            false
+                        }
+                    } else {
+                        // 如果源文件就是pdf
+                        if (url.endsWith(".pdf")) {
+                            // 网络文件
+                            if (url.startsWith("http")) {
+                                downloadFile(url)
+                                false
+                            } else {
+                                // 本地pdf上传阿里云，并下载到指定位置
+                                false
+                            }
+                        }
+
+                    }
+                    true
                 }
                 .filter {
                     if (it.boolean)
@@ -206,6 +227,14 @@ class PdfActivity : BaseActivity() {
                 })
     }
 
+    private fun loadPdf(file: File) {
+        hideProgress()
+        libpdf_main_pdf.fromFile(file)
+                .pageSnap(true)
+                .linkHandler { }
+                .load()
+    }
+
 
     private fun toPdf(token: String) {
 
@@ -259,7 +288,7 @@ class PdfActivity : BaseActivity() {
                     hideProgress()
                     libpdf_main_pdf.fromFile(pdfUrl.file())
                             .pageSnap(true)
-                            .linkHandler {  }
+                            .linkHandler { }
                             .load()
                     if (!url.startsWith("http")) {
                         FileUtil.deleteFile(url)
