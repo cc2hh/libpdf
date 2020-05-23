@@ -86,9 +86,12 @@ class PdfActivity : BaseActivity() {
      */
     private fun initData() {
         val isDown = intent.getBooleanExtra(isDown, false)
+        // 源文件
         val url = intent.getStringExtra(mUrl)
         val savePath = intent.getStringExtra(savePath)
-        val file = File(savePath + File(url).nameWithoutExtension + ".pdf")
+        val saveName = intent.getStringExtra(saveName)
+        // 转换后的文件
+        val file = File("$savePath$saveName.pdf")
 
         // 如果文件已存在
         if (!isDown && file.exists()) {
@@ -244,9 +247,9 @@ class PdfActivity : BaseActivity() {
 
     private fun downloadFile(pdfUrl: String) {
         val savePath = intent.getStringExtra(savePath)
+        val saveName = intent.getStringExtra(saveName)
         val url = intent.getStringExtra(mUrl)
-        val saveName = "${File(url).nameWithoutExtension}.${File(pdfUrl).extension}"
-        disposable = Task(url = pdfUrl, saveName = saveName, savePath = savePath).download()
+        disposable = Task(url = pdfUrl, saveName = "$saveName.pdf", savePath = savePath).download()
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(onNext = {
                 }, onComplete = {
@@ -285,8 +288,8 @@ class PdfActivity : BaseActivity() {
          *
          * @param url 文件本地路径或网络链接
          * @param path 转换后的pdf文件本地保存路径
-         * @param path 转换后的pdf文件本地保存路径
-         * @param down 强制下载文件
+         * @param name 转换后的pdf文件本地保存名称
+         * @param down true：强制下载文件；false：如果文件已存在则直接打开，不存在则进行转换后下载并打开
          */
         fun start(ctx: Context, url: String, path: String = FileUtil.getDirPath() + "/pdf/",
                   name: String = File(url).nameWithoutExtension, down: Boolean = false) {
