@@ -174,17 +174,16 @@ class PdfActivity : BaseActivity() {
                         Observable.just(url)
                     } else {
                         OSSPutObject.getInstance(this).connOssKey()
-                                .map { oss ->
-                                    oss.putObjectFromLocalFile(url).filter {
-                                        // 本地pdf上传阿里云，并下载到指定位置
-                                        if (url.endsWith(".pdf")) {
-                                            downloadFile(url)
-                                            false
-                                        } else {
-                                            true
-                                        }
-                                    }
-                                }
+                                .map { oss -> oss.putObjectFromLocalFile(url) }
+                    }
+                }
+                .filter {
+                    // 本地pdf上传阿里云，并下载到指定位置
+                    if (it.endsWith(".pdf")) {
+                        downloadFile(it)
+                        false
+                    } else {
+                        true
                     }
                 }
                 .toFlowable(BackpressureStrategy.BUFFER)
