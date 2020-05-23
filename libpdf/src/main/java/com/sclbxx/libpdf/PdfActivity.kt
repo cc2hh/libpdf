@@ -273,8 +273,10 @@ class PdfActivity : BaseActivity() {
     companion object {
         // 源文件url或路径
         private const val mUrl = "pdfUrl"
-        // 源文件需保存地址
+        // 保存地址
         private const val savePath = "savePath"
+        // 保存名称
+        private const val saveName = "saveName"
         // 强制下载
         private const val isDown = "isDown"
 
@@ -283,12 +285,15 @@ class PdfActivity : BaseActivity() {
          *
          * @param url 文件本地路径或网络链接
          * @param path 转换后的pdf文件本地保存路径
+         * @param path 转换后的pdf文件本地保存路径
          * @param down 强制下载文件
          */
-        fun start(ctx: Context, url: String, path: String? = null, down: Boolean = false) {
+        fun start(ctx: Context, url: String, path: String = FileUtil.getDirPath() + "/pdf/",
+                  name: String = File(url).nameWithoutExtension, down: Boolean = false) {
             val intent = Intent(ctx, PdfActivity::class.java)
             intent.putExtra(mUrl, url)
-            intent.putExtra(savePath, path ?: FileUtil.getDirPath() + "/pdf/")
+            intent.putExtra(savePath, path)
+            intent.putExtra(saveName, name)
             intent.putExtra(isDown, down)
             ctx.startActivity(intent)
         }
