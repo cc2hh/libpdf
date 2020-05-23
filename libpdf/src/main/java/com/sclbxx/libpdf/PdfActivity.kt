@@ -96,7 +96,10 @@ class PdfActivity : BaseActivity() {
         // 如果文件已存在
         if (!isDown && file.exists()) {
             hideProgress()
-            libpdf_main_pdf.fromFile(file).load()
+            libpdf_main_pdf.fromFile(file)
+                    .pageSnap(true)
+                    .linkHandler {  }
+                    .load()
             return
         }
 
@@ -254,7 +257,10 @@ class PdfActivity : BaseActivity() {
                 .subscribeBy(onNext = {
                 }, onComplete = {
                     hideProgress()
-                    libpdf_main_pdf.fromFile(pdfUrl.file()).load()
+                    libpdf_main_pdf.fromFile(pdfUrl.file())
+                            .pageSnap(true)
+                            .linkHandler {  }
+                            .load()
                     if (!url.startsWith("http")) {
                         FileUtil.deleteFile(url)
                     }
