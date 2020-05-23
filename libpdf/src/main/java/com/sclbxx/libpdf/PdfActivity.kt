@@ -134,9 +134,6 @@ class PdfActivity : BaseActivity() {
                             if (url.startsWith("http")) {
                                 downloadFile(url)
                                 false
-                            } else {
-                                // 本地pdf上传阿里云，并下载到指定位置
-                                false
                             }
                         }
 
@@ -177,7 +174,17 @@ class PdfActivity : BaseActivity() {
                         Observable.just(url)
                     } else {
                         OSSPutObject.getInstance(this).connOssKey()
-                                .map { oss -> oss.putObjectFromLocalFile(url) }
+                                .map { oss ->
+                                    oss.putObjectFromLocalFile(url).filter {
+                                        // 本地pdf上传阿里云，并下载到指定位置
+                                        if (url.endsWith(".pdf")) {
+                                            downloadFile(url)
+                                            false
+                                        } else {
+                                            true
+                                        }
+                                    }
+                                }
                     }
                 }
                 .toFlowable(BackpressureStrategy.BUFFER)
