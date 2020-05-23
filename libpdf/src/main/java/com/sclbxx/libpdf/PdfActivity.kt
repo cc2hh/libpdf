@@ -123,11 +123,11 @@ class PdfActivity : BaseActivity() {
                             // 如果源文件就是pdf
                             if (url.endsWith(".pdf")) {
                                 downloadFile(url)
-                                false
-                            } else true
+                                return@filter false
+                            }
                         } else {
                             loadPdf(file)
-                            false
+                            return@filter false
                         }
                     } else {
                         // 如果源文件就是pdf
@@ -135,10 +135,12 @@ class PdfActivity : BaseActivity() {
                             // 网络文件
                             if (url.startsWith("http")) {
                                 downloadFile(url)
-                                false
-                            } else true
-                        } else true
+                                return@filter false
+                            }
+                        }
+
                     }
+                    true
                 }
                 .filter {
                     if (it.boolean)
@@ -300,7 +302,6 @@ class PdfActivity : BaseActivity() {
                     if (!url.startsWith("http")) {
                         FileUtil.deleteFile(url)
                     }
-                    task.manager().delete()
                 }, onError = {
                     toast("下载失败:$it")
                     hideProgress()
