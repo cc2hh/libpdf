@@ -4,8 +4,6 @@ import android.content.Context;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.socks.library.KLog;
-
 /**
  * Created by cc on 2018/6/4.
  * <p>

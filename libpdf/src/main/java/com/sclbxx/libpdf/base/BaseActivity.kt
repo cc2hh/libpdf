@@ -10,7 +10,6 @@ import android.widget.Toast
 import com.sclbxx.libpdf.MyProgressDialog
 import com.sclbxx.libpdf.R
 import com.sclbxx.libpdf.util.ToastUtils
-import com.socks.library.KLog
 import com.tbruyelle.rxpermissions2.RxPermissions
 import com.uber.autodispose.AutoDispose
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider

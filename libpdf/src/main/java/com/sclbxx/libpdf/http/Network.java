@@ -4,7 +4,6 @@ import android.content.Context;
 import android.util.Log;
 
 import com.sclbxx.libpdf.util.ACache;
-import com.socks.library.KLog;
 
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
@@ -63,7 +62,6 @@ public class Network {
      * version: V1.0 <p/>
      */
     public static void resetAPI(String url) {
-        KLog.d(url);
         if (url == null || url.equals("")) {
             return;
         }
