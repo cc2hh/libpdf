@@ -8,7 +8,7 @@
     <application>
         <activity
             android:name=".PdfActivity"
-            android:configChanges="orientation|keyboardHidden" />
+            android:configChanges="orientation|keyboardHidden|screenSize" />
     </application>
 
 </manifest>
