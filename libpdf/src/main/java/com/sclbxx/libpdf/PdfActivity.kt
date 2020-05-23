@@ -29,6 +29,8 @@ import okhttp3.MediaType
 import okhttp3.RequestBody
 import zlc.season.rxdownload4.download
 import zlc.season.rxdownload4.file
+import zlc.season.rxdownload4.manager.delete
+import zlc.season.rxdownload4.manager.manager
 import zlc.season.rxdownload4.task.Task
 import java.io.File
 import java.util.*
@@ -287,7 +289,8 @@ class PdfActivity : BaseActivity() {
         val savePath = intent.getStringExtra(savePath)
         val saveName = intent.getStringExtra(saveName)
         val url = intent.getStringExtra(mUrl)
-        disposable = Task(url = pdfUrl, saveName = "$saveName.pdf", savePath = savePath).download()
+        val task = Task(url = pdfUrl, saveName = "$saveName.pdf", savePath = savePath)
+        disposable = task.download()
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(onNext = {
                 }, onComplete = {
@@ -299,6 +302,7 @@ class PdfActivity : BaseActivity() {
                     if (!url.startsWith("http")) {
                         FileUtil.deleteFile(url)
                     }
+                    task.manager().delete()
                 }, onError = {
                     toast("下载失败:$it")
                     hideProgress()
