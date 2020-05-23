@@ -124,7 +124,7 @@ class PdfActivity : BaseActivity() {
                             if (url.endsWith(".pdf")) {
                                 downloadFile(url)
                                 false
-                            }
+                            } else true
                         } else {
                             loadPdf(file)
                             false
@@ -136,11 +136,9 @@ class PdfActivity : BaseActivity() {
                             if (url.startsWith("http")) {
                                 downloadFile(url)
                                 false
-                            }
-                        }
-
+                            } else true
+                        } else true
                     }
-                    true
                 }
                 .filter {
                     if (it.boolean)
