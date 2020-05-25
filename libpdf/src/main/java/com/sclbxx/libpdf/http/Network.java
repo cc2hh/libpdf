@@ -94,6 +94,9 @@ public class Network {
             mOkHttpClient = builder
 //                    .addNetworkInterceptor(mRewriteCacheControlInterceptor)
                     .connectTimeout(0, TimeUnit.SECONDS)
+                    .callTimeout(0,TimeUnit.SECONDS)
+                    .readTimeout(0,TimeUnit.SECONDS)
+                    .writeTimeout(0,TimeUnit.SECONDS)
                     .build();
 
         }

@@ -157,11 +157,15 @@ class PdfActivity : BaseActivity() {
                     _cache.put("userPwd", login.userPwd)
                 }
                 .flatMap {
-                    if (url.startsWith("http")) {
-                        Observable.just(url)
-                    } else {
-                        OSSPutObject.getInstance(this).connOssKey()
-                                .map { oss -> oss.putObjectFromLocalFile(url) }
+                    val tempUrl = _cache.getAsString(url)
+                    when {
+                        //  本地文件已上传阿里云
+                        tempUrl != null -> Observable.just(tempUrl)
+                        url.startsWith("http") -> Observable.just(url)
+                        else -> OSSPutObject.getInstance(this).connOssKey()
+                                .map { oss ->
+                                    oss.putObjectFromLocalFile(url)
+                                }
                     }
                 }
                 .filter {
@@ -254,7 +258,7 @@ class PdfActivity : BaseActivity() {
                     }
                 }, {
                     val retry = _cache.getAsString("retry") ?: ""
-                    if (it.toString().contains("HTTP 500") && retryIndex < 3 && "" != retry) {
+                    if ((it.toString().contains("HTTP 500") || "" != retry) && retryIndex < 3) {
                         retryIndex++
                         Log.e("retryIndex:", "$retryIndex")
                         toPdf(_cache.getAsString("token"))
