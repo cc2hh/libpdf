@@ -93,7 +93,7 @@ class PdfActivity : BaseActivity() {
         val savePath = intent.getStringExtra(savePath)
         val saveName = intent.getStringExtra(saveName)
         // 转换后的文件
-        val file = File("$savePath$saveName.pdf")
+        val file = File("$savePath/$saveName.pdf")
 
         // 本地文件不存在
         if (!url.startsWith("http") && !File(url).exists()) {
@@ -116,29 +116,14 @@ class PdfActivity : BaseActivity() {
                     }
                 }
                 .filter {
-                    // 如果文件已存在
+                    // 如果保存文件已存在
                     if (file.exists()) {
-                        // 强制下载
-                        if (isDown) {
-                            // 如果源文件就是pdf
-                            if (url.endsWith(".pdf")) {
-                                downloadFile(url)
-                                return@filter false
-                            }
-                        } else {
-                            loadPdf(file)
-                            return@filter false
-                        }
-                    } else {
-                        // 如果源文件就是pdf
-                        if (url.endsWith(".pdf")) {
-                            // 网络文件
-                            if (url.startsWith("http")) {
-                                downloadFile(url)
-                                return@filter false
-                            }
-                        }
-
+                        loadPdf(file)
+                        return@filter false
+                    } else if (url.endsWith(".pdf") && url.startsWith("http")) {
+                        // 如果源文件就是pdf且是网络文件
+                        downloadFile(url)
+                        return@filter false
                     }
                     true
                 }
@@ -194,7 +179,7 @@ class PdfActivity : BaseActivity() {
                     // token 每天头次访问时更新
                     val upTimeToken = _cache.getAsString("upTimeToken") ?: ""
                     var token = _cache.getAsString("token") ?: ""
-                    if (DateUtil.date2Str(Date(), DateUtil.FORMAT_YMD) > upTimeToken) {
+                    if (DateUtil.date2Str(Date(), DateUtil.FORMAT_YMDHMS) > upTimeToken) {
 
                         Network.URL = _cache.getAsString("url").replace("/zhjy", "")
                         val param = TokenParam()
@@ -218,7 +203,7 @@ class PdfActivity : BaseActivity() {
                                     // 缓存token
                                     token = item.data.token
                                     _cache.put("token", token)
-                                    _cache.put("upTimeToken", DateUtil.date2Str(Date(), DateUtil.FORMAT_YMD))
+                                    _cache.put("upTimeToken", item.data.activeTime)
                                     token
                                 }
                     } else {
@@ -331,8 +316,8 @@ class PdfActivity : BaseActivity() {
          *  跳转
          *
          * @param url 文件本地路径或网络链接
-         * @param path 转换后的pdf文件本地保存路径
-         * @param name 转换后的pdf文件本地保存名称
+         * @param path 转换后的pdf文件本地保存路径，默认保存在 根路径/pdf/
+         * @param name 转换后的pdf文件本地保存名称，纯文件名，不带后缀
          * @param down true：强制下载文件；false：如果文件已存在则直接打开，不存在则进行转换后下载并打开
          */
         fun start(ctx: Context, url: String, path: String = FileUtil.getDirPath() + "/pdf/",
