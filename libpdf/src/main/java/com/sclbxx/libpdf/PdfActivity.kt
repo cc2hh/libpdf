@@ -177,8 +177,7 @@ class PdfActivity : BaseActivity() {
                 .flatMap {
                     pdfUrl = it
                     // token 每天头次访问时更新
-                    val upTimeToken: Long = _cache.getAsObject("upTimeToken") as Long?
-                            ?: 0L
+                    val upTimeToken: Long = _cache.getAsObject("upTimeToken") as Long? ?: 0L
                     var token = _cache.getAsString("token") ?: ""
                     // 获取时间过10小时就更新token
                     if (Date().time - upTimeToken > 10 * 60 * 60 * 1000) {
