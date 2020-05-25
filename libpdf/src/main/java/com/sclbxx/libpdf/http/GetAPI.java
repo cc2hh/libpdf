@@ -28,7 +28,7 @@ public interface GetAPI {
     @POST("/zhjy/ossremote/getAccessInfoRemote.action")
     Observable<OSSKey> upLoadLogALiYun(@QueryMap Map<String, Object> paramInt);
 
-    @POST("/zhjy-basedata-customer/serverutil/miniLogin.action")
+    @POST("/zhjy-basedata-customer/serverutil/getUserToken.action")
     Flowable<Token> getToken(@Body RequestBody param);
 
     @POST("/zhjy-basedata-customer/ossremote/getOSSFileConvert.action")

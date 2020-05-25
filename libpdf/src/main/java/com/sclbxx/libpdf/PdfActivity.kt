@@ -177,9 +177,11 @@ class PdfActivity : BaseActivity() {
                 .flatMap {
                     pdfUrl = it
                     // token 每天头次访问时更新
-                    val upTimeToken = _cache.getAsString("upTimeToken") ?: ""
+                    val upTimeToken: Long = _cache.getAsObject("upTimeToken") as Long?
+                            ?: Date().time
                     var token = _cache.getAsString("token") ?: ""
-                    if (DateUtil.date2Str(Date(), DateUtil.FORMAT_YMDHMS) > upTimeToken) {
+                    // 获取时间过10小时就更新token
+                    if (Date().time - upTimeToken > 10 * 60 * 60 * 1000) {
 
                         Network.URL = _cache.getAsString("url").replace("/zhjy", "")
                         val param = TokenParam()
@@ -203,7 +205,7 @@ class PdfActivity : BaseActivity() {
                                     // 缓存token
                                     token = item.data.token
                                     _cache.put("token", token)
-                                    _cache.put("upTimeToken", item.data.activeTime)
+                                    _cache.put("upTimeToken", Date().time)
                                     token
                                 }
                     } else {
