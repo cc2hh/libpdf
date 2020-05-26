@@ -159,6 +159,7 @@ class PdfActivity : BaseActivity() {
                     _cache.put("url", login.url)
                     _cache.put("userAccount", login.userAccount)
                     _cache.put("userPwd", login.userPwd)
+                    Network.URL = _cache.getAsString("url").replace("/zhjy", "")
                 }
                 .flatMap {
                     val tempUrl = _cache.getAsString(url)
@@ -190,8 +191,7 @@ class PdfActivity : BaseActivity() {
                     // 获取时间过10小时就更新token
                     if (Date().time - upTimeToken > 10 * 60 * 60 * 1000) {
 
-                        Network.URL = _cache.getAsString("url").replace("/zhjy", "")
-                        val param = TokenParam()
+                       val param = TokenParam()
                         param.accountName = _cache.getAsString("userAccount")
                         param.password = UpData.updateService
                                 .decryptAndEncrypt(_cache.getAsString("userAccount"),
