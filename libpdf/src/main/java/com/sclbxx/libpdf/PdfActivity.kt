@@ -118,11 +118,15 @@ class PdfActivity : BaseActivity() {
                 .filter {
                     // 如果保存文件已存在
                     if (file.exists()) {
-                        if (isDown && url.startsWith("http") && url.endsWith(".pdf")) {
-                            FileUtil.deleteFile(file.absolutePath)
-                            downloadFile(url)
+                        if (isDown && url.startsWith("http")) {
+                            if (url.endsWith(".pdf")) {
+                                FileUtil.deleteFile(file.absolutePath)
+                                downloadFile(url)
+                                return@filter false
+                            }
                         } else {
                             loadPdf(file)
+                            return@filter false
                         }
                         return@filter false
                     } else if (url.endsWith(".pdf") && url.startsWith("http")) {
