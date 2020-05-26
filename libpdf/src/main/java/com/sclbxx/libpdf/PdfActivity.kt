@@ -104,14 +104,14 @@ class PdfActivity : BaseActivity() {
         }
 
         if (url.startsWith("http")) {
-            val temp = url.substring(url.lastIndexOf("/") + 1) + file.nameWithoutExtension + ".pdf"
+            val temp = url.substring(0,url.lastIndexOf("/") + 1) + file.nameWithoutExtension + ".pdf"
             downloadFile(temp, true)
         }
     }
 
     private fun initRx() {
         val url = intent.getStringExtra(mUrl)
-        val isDown = intent.getBooleanExtra(Companion.isDown, false)
+        val isDown = intent.getBooleanExtra(isDown, false)
         val savePath = intent.getStringExtra(savePath)
         val saveName = intent.getStringExtra(saveName)
         // 转换后的文件
