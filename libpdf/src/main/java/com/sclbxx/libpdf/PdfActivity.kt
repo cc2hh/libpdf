@@ -3,6 +3,7 @@ package com.sclbxx.libpdf
 import android.Manifest
 import android.arch.lifecycle.Lifecycle
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
@@ -49,6 +50,8 @@ class PdfActivity : BaseActivity() {
     private lateinit var pdfUrl: String
     // 转换pdf失败重试次数
     private var retryIndex = 0
+    // 转换pdf失败默认重试次数
+    private val DEFAULT_RETRY = 5
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -70,6 +73,7 @@ class PdfActivity : BaseActivity() {
      *
      */
     private fun init() {
+
         showProgress().setOnKeyListener { _, keyCode, _ ->
             if (keyCode == KeyEvent.KEYCODE_BACK) {
                 hideProgress()
@@ -102,6 +106,8 @@ class PdfActivity : BaseActivity() {
             return
         }
 
+        // 初始化重试次数
+        retryIndex = 0
         RxBusNew.getInstance().toObservableSticky(Event::class.java)
                 // 检测文件类型
                 .filter {
@@ -188,6 +194,7 @@ class PdfActivity : BaseActivity() {
                 }
                 .toFlowable(BackpressureStrategy.BUFFER)
                 .flatMap {
+                    _cache.put(url, it)
                     pdfUrl = it
                     // token 每天头次访问时更新
                     val upTimeToken: Long = _cache.getAsObject("upTimeToken") as Long? ?: 0L
@@ -233,7 +240,15 @@ class PdfActivity : BaseActivity() {
                 })
     }
 
+    /**
+     * 加载pdf
+     *
+     * @Author cc
+     * @Date 2020/5/26 16:01
+     * @version 1.0
+     */
     private fun loadPdf(file: File) {
+
         hideProgress()
         libpdf_main_pdf.fromFile(file)
                 .pageSnap(true)
@@ -250,6 +265,12 @@ class PdfActivity : BaseActivity() {
     }
 
 
+    /**
+     * 转换成pdf
+     * @Author cc
+     * @Date 2020/5/26 16:02
+     * @version 1.0
+     */
     private fun toPdf(token: String) {
 
         val param = ToPdfParam()
@@ -264,9 +285,17 @@ class PdfActivity : BaseActivity() {
                 .subscribe({
                     if (it.success == 1) {
                         downloadFile(it.data.pdfUrl)
-                    } else if (it.error.contains("文档转化") && retryIndex < 3) {
-                        retryIndex++
-                        toPdf(_cache.getAsString("token"))
+                    } else if (it.error.contains("文档转化") && retryIndex < DEFAULT_RETRY) {
+                        // 延迟2s再重试
+                        window.decorView.postDelayed({
+                            retryIndex++
+                            if (retryIndex == DEFAULT_RETRY) {
+                                showRetry()
+                            } else {
+                                toPdf(_cache.getAsString("token"))
+                            }
+                        }, 2000)
+
                     } else {
                         hideProgress()
                         toast("转换异常:$it.error")
@@ -274,10 +303,16 @@ class PdfActivity : BaseActivity() {
                     }
                 }, {
                     val retry = _cache.getAsString("retry") ?: ""
-                    if ((it.toString().contains("HTTP 500") || "" != retry) && retryIndex < 3) {
-                        retryIndex++
-                        Log.e("retryIndex:", "$retryIndex")
-                        toPdf(_cache.getAsString("token"))
+                    if ((it.toString().contains("HTTP 500") || "" != retry) && retryIndex < DEFAULT_RETRY) {
+                        // 延迟2s再重试
+                        window.decorView.postDelayed({
+                            retryIndex++
+                            if (retryIndex == DEFAULT_RETRY) {
+                                showRetry()
+                            } else {
+                                toPdf(_cache.getAsString("token"))
+                            }
+                        }, 2000)
                     } else {
                         toast(it.toString())
                         hideProgress()
@@ -305,6 +340,26 @@ class PdfActivity : BaseActivity() {
                     hideProgress()
                     finish()
                 })
+    }
+
+    /**
+     *  显示重试对话框
+     * @Author cc
+     * @Date 2020/5/26 16:45
+     * @version 1.0
+     */
+    private fun showRetry() {
+        AlertDialog.Builder(this)
+                .setMessage("文件转换中，继续等待")
+                .setPositiveButton("确定") { d, _ ->
+                    d.dismiss()
+                    retryIndex = 0
+                }
+                .setNegativeButton("退出") { d, _ ->
+                    d.dismiss()
+                    finish()
+                }
+                .show()
     }
 
 
