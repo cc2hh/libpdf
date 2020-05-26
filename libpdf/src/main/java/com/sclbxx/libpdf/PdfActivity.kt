@@ -96,15 +96,15 @@ class PdfActivity : BaseActivity() {
 
 
         // 本地文件不存在
-        if (!url.startsWith("http") && !File(url).exists()) {
+        val file = File(url)
+        if (!url.startsWith("http") && !file.exists()) {
             toast("文件不存在")
             finish()
             return
         }
 
         if (url.startsWith("http")) {
-            val file = File(url)
-            val temp = file.parent + "/" + file.nameWithoutExtension + ".pdf"
+            val temp = url.substring(url.lastIndexOf("."))+file.nameWithoutExtension +".pdf"
             downloadFile(temp,true)
         }
     }
