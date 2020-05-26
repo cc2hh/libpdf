@@ -128,7 +128,6 @@ class PdfActivity : BaseActivity() {
                             loadPdf(file)
                             return@filter false
                         }
-                        return@filter false
                     } else if (url.endsWith(".pdf") && url.startsWith("http")) {
                         // 如果源文件就是pdf且是网络文件
                         downloadFile(url)
