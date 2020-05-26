@@ -104,8 +104,10 @@ class PdfActivity : BaseActivity() {
         }
 
         if (url.startsWith("http")) {
-            val temp = url.substring(0,url.lastIndexOf("/") + 1) + file.nameWithoutExtension + ".pdf"
+            val temp = url.substring(0, url.lastIndexOf("/") + 1) + file.nameWithoutExtension + ".pdf"
             downloadFile(temp, true)
+        }else{
+            initRx()
         }
     }
 
@@ -310,7 +312,7 @@ class PdfActivity : BaseActivity() {
 
                     } else {
                         hideProgress()
-                        toast("转换异常:$it.error")
+                        toast("转换:$it.error")
                         finish()
                     }
                 }, {
@@ -326,7 +328,7 @@ class PdfActivity : BaseActivity() {
                             }
                         }, 2000)
                     } else {
-                        toast(it.toString())
+                        toast("转换异常:$it")
                         hideProgress()
                         finish()
                     }
@@ -352,7 +354,7 @@ class PdfActivity : BaseActivity() {
                     if (isTry) {
                         initRx()
                     } else {
-                        toast("下载失败:$it")
+                        toast("下载异常:$it")
                         hideProgress()
                         finish()
                     }
