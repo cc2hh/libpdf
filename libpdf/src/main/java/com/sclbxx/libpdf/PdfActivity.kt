@@ -344,6 +344,7 @@ class PdfActivity : BaseActivity() {
         val task = Task(url = pdfUrl, saveName = "$saveName.pdf", savePath = savePath)
         disposable = task.download()
                 .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(onNext = {
                 }, onComplete = {
                     loadPdf(pdfUrl.file())
