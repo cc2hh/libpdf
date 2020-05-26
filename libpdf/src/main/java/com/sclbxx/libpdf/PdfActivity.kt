@@ -118,7 +118,8 @@ class PdfActivity : BaseActivity() {
                 .filter {
                     // 如果保存文件已存在
                     if (file.exists()) {
-                        if (isDown && url.startsWith("http")&&url.endsWith(".pdf")) {
+                        if (isDown && url.startsWith("http") && url.endsWith(".pdf")) {
+                            FileUtil.deleteFile(file.absolutePath)
                             downloadFile(url)
                         } else {
                             loadPdf(file)
@@ -191,7 +192,7 @@ class PdfActivity : BaseActivity() {
                     // 获取时间过10小时就更新token
                     if (Date().time - upTimeToken > 10 * 60 * 60 * 1000) {
 
-                       val param = TokenParam()
+                        val param = TokenParam()
                         param.accountName = _cache.getAsString("userAccount")
                         param.password = UpData.updateService
                                 .decryptAndEncrypt(_cache.getAsString("userAccount"),
