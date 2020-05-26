@@ -104,8 +104,8 @@ class PdfActivity : BaseActivity() {
         }
 
         if (url.startsWith("http")) {
-            val temp = url.substring(url.lastIndexOf("."))+file.nameWithoutExtension +".pdf"
-            downloadFile(temp,true)
+            val temp = url.substring(url.lastIndexOf("/") + 1) + file.nameWithoutExtension + ".pdf"
+            downloadFile(temp, true)
         }
     }
 
@@ -138,7 +138,7 @@ class PdfActivity : BaseActivity() {
                         if (isDown && url.startsWith("http")) {
                             if (url.endsWith(".pdf")) {
                                 FileUtil.deleteFile(file.absolutePath)
-                                downloadFile(url,false)
+                                downloadFile(url, false)
                                 return@filter false
                             }
                         } else {
@@ -147,7 +147,7 @@ class PdfActivity : BaseActivity() {
                         }
                     } else if (url.endsWith(".pdf") && url.startsWith("http")) {
                         // 如果源文件就是pdf且是网络文件
-                        downloadFile(url,false)
+                        downloadFile(url, false)
                         return@filter false
                     }
                     true
@@ -197,7 +197,7 @@ class PdfActivity : BaseActivity() {
                 .filter {
                     // 本地pdf上传阿里云，并下载到指定位置
                     if (it.endsWith(".pdf")) {
-                        downloadFile(it,false)
+                        downloadFile(it, false)
                         false
                     } else {
                         true
@@ -296,7 +296,7 @@ class PdfActivity : BaseActivity() {
                         .from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe({
                     if (it.success == 1) {
-                        downloadFile(it.data.pdfUrl,false)
+                        downloadFile(it.data.pdfUrl, false)
                     } else if (it.error.contains("文档转化") && retryIndex < DEFAULT_RETRY) {
                         // 延迟2s再重试
                         window.decorView.postDelayed({
