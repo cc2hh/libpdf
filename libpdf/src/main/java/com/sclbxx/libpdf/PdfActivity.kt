@@ -91,13 +91,9 @@ class PdfActivity : BaseActivity() {
      *
      */
     private fun initData() {
-        val isDown = intent.getBooleanExtra(isDown, false)
         // 源文件
         val url = intent.getStringExtra(mUrl)
-        val savePath = intent.getStringExtra(savePath)
-        val saveName = intent.getStringExtra(saveName)
-        // 转换后的文件
-        val file = File("$savePath/$saveName.pdf")
+
 
         // 本地文件不存在
         if (!url.startsWith("http") && !File(url).exists()) {
@@ -105,6 +101,21 @@ class PdfActivity : BaseActivity() {
             finish()
             return
         }
+
+        if (url.startsWith("http")) {
+            val file = File(url)
+            val temp = file.parent + "/" + file.nameWithoutExtension + ".pdf"
+            downloadFile(temp,true)
+        }
+    }
+
+    private fun initRx() {
+        val url = intent.getStringExtra(mUrl)
+        val isDown = intent.getBooleanExtra(Companion.isDown, false)
+        val savePath = intent.getStringExtra(savePath)
+        val saveName = intent.getStringExtra(saveName)
+        // 转换后的文件
+        val file = File("$savePath/$saveName.pdf")
 
         // 初始化重试次数
         retryIndex = 0
@@ -127,7 +138,7 @@ class PdfActivity : BaseActivity() {
                         if (isDown && url.startsWith("http")) {
                             if (url.endsWith(".pdf")) {
                                 FileUtil.deleteFile(file.absolutePath)
-                                downloadFile(url)
+                                downloadFile(url,false)
                                 return@filter false
                             }
                         } else {
@@ -136,7 +147,7 @@ class PdfActivity : BaseActivity() {
                         }
                     } else if (url.endsWith(".pdf") && url.startsWith("http")) {
                         // 如果源文件就是pdf且是网络文件
-                        downloadFile(url)
+                        downloadFile(url,false)
                         return@filter false
                     }
                     true
@@ -186,7 +197,7 @@ class PdfActivity : BaseActivity() {
                 .filter {
                     // 本地pdf上传阿里云，并下载到指定位置
                     if (it.endsWith(".pdf")) {
-                        downloadFile(it)
+                        downloadFile(it,false)
                         false
                     } else {
                         true
@@ -249,10 +260,11 @@ class PdfActivity : BaseActivity() {
      */
     private fun loadPdf(file: File) {
 
-        hideProgress()
+//        hideProgress()
         libpdf_main_pdf.fromFile(file)
                 .pageSnap(true)
                 .linkHandler { }
+                .onLoad { hideProgress() }
                 .load()
         val savePath = intent.getStringExtra(savePath)
         val saveName = intent.getStringExtra(saveName)
@@ -284,7 +296,7 @@ class PdfActivity : BaseActivity() {
                         .from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe({
                     if (it.success == 1) {
-                        downloadFile(it.data.pdfUrl)
+                        downloadFile(it.data.pdfUrl,false)
                     } else if (it.error.contains("文档转化") && retryIndex < DEFAULT_RETRY) {
                         // 延迟2s再重试
                         window.decorView.postDelayed({
@@ -326,7 +338,7 @@ class PdfActivity : BaseActivity() {
      *
      */
 
-    private fun downloadFile(pdfUrl: String) {
+    private fun downloadFile(pdfUrl: String, isTry: Boolean) {
         val savePath = intent.getStringExtra(savePath)
         val saveName = intent.getStringExtra(saveName)
         val task = Task(url = pdfUrl, saveName = "$saveName.pdf", savePath = savePath)
@@ -336,9 +348,13 @@ class PdfActivity : BaseActivity() {
                 }, onComplete = {
                     loadPdf(pdfUrl.file())
                 }, onError = {
-                    toast("下载失败:$it")
-                    hideProgress()
-                    finish()
+                    if (isTry) {
+                        initRx()
+                    } else {
+                        toast("下载失败:$it")
+                        hideProgress()
+                        finish()
+                    }
                 })
     }
 
