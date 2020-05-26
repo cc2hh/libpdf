@@ -235,9 +235,12 @@ class PdfActivity : BaseActivity() {
                 .pageSnap(true)
                 .linkHandler { }
                 .load()
-
+        val savePath = intent.getStringExtra(savePath)
+        val saveName = intent.getStringExtra(saveName)
+        // 转换后的文件
+        val file = File("$savePath/$saveName.pdf")
         val url = intent.getStringExtra(mUrl)
-        if (!url.startsWith("http")) {
+        if (!url.startsWith("http") && (file.absolutePath != url || !url.endsWith(".pdf"))) {
             FileUtil.deleteFile(url)
         }
     }
