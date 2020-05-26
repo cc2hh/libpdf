@@ -118,7 +118,7 @@ class PdfActivity : BaseActivity() {
                 .filter {
                     // 如果保存文件已存在
                     if (file.exists()) {
-                        if (isDown && url.startsWith("http")) {
+                        if (isDown && url.startsWith("http")&&url.endsWith(".pdf")) {
                             downloadFile(url)
                         } else {
                             loadPdf(file)
