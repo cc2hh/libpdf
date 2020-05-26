@@ -118,7 +118,11 @@ class PdfActivity : BaseActivity() {
                 .filter {
                     // 如果保存文件已存在
                     if (file.exists()) {
-                        loadPdf(file)
+                        if (isDown && url.startsWith("http")) {
+                            downloadFile(url)
+                        } else {
+                            loadPdf(file)
+                        }
                         return@filter false
                     } else if (url.endsWith(".pdf") && url.startsWith("http")) {
                         // 如果源文件就是pdf且是网络文件
@@ -231,6 +235,11 @@ class PdfActivity : BaseActivity() {
                 .pageSnap(true)
                 .linkHandler { }
                 .load()
+
+        val url = intent.getStringExtra(mUrl)
+        if (!url.startsWith("http")) {
+            FileUtil.deleteFile(url)
+        }
     }
 
 
@@ -278,20 +287,12 @@ class PdfActivity : BaseActivity() {
     private fun downloadFile(pdfUrl: String) {
         val savePath = intent.getStringExtra(savePath)
         val saveName = intent.getStringExtra(saveName)
-        val url = intent.getStringExtra(mUrl)
         val task = Task(url = pdfUrl, saveName = "$saveName.pdf", savePath = savePath)
         disposable = task.download()
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(onNext = {
                 }, onComplete = {
-                    hideProgress()
-                    libpdf_main_pdf.fromFile(pdfUrl.file())
-                            .pageSnap(true)
-                            .linkHandler { }
-                            .load()
-                    if (!url.startsWith("http")) {
-                        FileUtil.deleteFile(url)
-                    }
+                    loadPdf(pdfUrl.file())
                 }, onError = {
                     toast("下载失败:$it")
                     hideProgress()
