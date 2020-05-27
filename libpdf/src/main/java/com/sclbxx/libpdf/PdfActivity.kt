@@ -388,6 +388,7 @@ class PdfActivity : BaseActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        disPdf?.apply { if (isDisposed) dispose() }
         disposable?.apply { if (isDisposed) dispose() }
         UpData.destroy(this)
         RxBusNew.getInstance().reset()
