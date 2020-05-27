@@ -47,6 +47,7 @@ class PdfActivity : BaseActivity() {
     private val CODE_PERMISSION_READ = 0
     private var disposable: Disposable? = null
     private var disPdf: Disposable? = null
+    private var disRx: Disposable? = null
     private lateinit var _cache: ACache
     private lateinit var pdfUrl: String
     // 转换pdf失败重试次数
@@ -77,7 +78,6 @@ class PdfActivity : BaseActivity() {
 
         showProgress().setOnKeyListener { _, keyCode, _ ->
             if (keyCode == KeyEvent.KEYCODE_BACK) {
-                hideProgress()
                 finish()
             }
             false
@@ -104,16 +104,22 @@ class PdfActivity : BaseActivity() {
             return
         }
 
+        // 初始化重试次数
+        retryIndex = 0
+
         // 网络文件
         if (url.startsWith("http")) {
             val temp = url.substring(0, url.lastIndexOf("/") + 1) + file.nameWithoutExtension + ".pdf"
             downloadFile(temp, true)
-        }else{
+        } else {
             initRx()
         }
     }
 
     private fun initRx() {
+
+        disRx?.apply { if (isDisposed) dispose() }
+
         val url = intent.getStringExtra(mUrl)
         val isDown = intent.getBooleanExtra(isDown, false)
         val savePath = intent.getStringExtra(savePath)
@@ -121,16 +127,13 @@ class PdfActivity : BaseActivity() {
         // 转换后的文件
         val file = File("$savePath/$saveName.pdf")
 
-        // 初始化重试次数
-        retryIndex = 0
-        RxBusNew.getInstance().toObservableSticky(Event::class.java)
+        disRx = RxBusNew.getInstance().toObservableSticky(Event::class.java)
                 // 检测文件类型
                 .filter {
                     val extension = File(url).extension
                     if (FileUtil.checkType(extension)) {
                         true
                     } else {
-                        hideProgress()
                         toast("$extension 为不支持的文件类型")
                         finish()
                         false
@@ -157,6 +160,14 @@ class PdfActivity : BaseActivity() {
                     true
                 }
                 .filter {
+                    val tempUrl = _cache.getAsString(url)
+                    if (tempUrl != null && retryIndex < DEFAULT_RETRY) {
+                        retryDown()
+                        return@filter false
+                    }
+                    true
+                }
+                .filter {
                     if (it.boolean)
                         true
                     else {
@@ -172,6 +183,7 @@ class PdfActivity : BaseActivity() {
                                     v.dismiss()
                                     finish()
                                 }
+                                .setCancelable(false)
                                 .show()
                         false
                     }
@@ -187,10 +199,8 @@ class PdfActivity : BaseActivity() {
                     Network.URL = _cache.getAsString("url").replace("/zhjy", "")
                 }
                 .flatMap {
-                    val tempUrl = _cache.getAsString(url)
                     when {
                         //  本地文件已上传阿里云
-                        tempUrl != null -> Observable.just(tempUrl)
                         url.startsWith("http") -> Observable.just(url)
                         else -> OSSPutObject.getInstance(this).connOssKey()
                                 .map { oss ->
@@ -250,7 +260,6 @@ class PdfActivity : BaseActivity() {
                         .from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe({ toPdf(it) }, {
                     toast(it.toString())
-                    hideProgress()
                     finish()
                 })
     }
@@ -303,40 +312,38 @@ class PdfActivity : BaseActivity() {
                 .subscribe({
                     if (it.success == 1) {
                         downloadFile(it.data.pdfUrl, false)
-                    } else if (it.error.contains("文档转化") && retryIndex < DEFAULT_RETRY) {
-                        // 延迟2s再重试
-                        window.decorView.postDelayed({
-                            retryIndex++
-                            if (retryIndex == DEFAULT_RETRY) {
-                                showRetry()
-                            } else {
-                                toPdf(_cache.getAsString("token"))
-                            }
-                        }, 2000)
-
+                    } else if (it.error.contains("转化中") && retryIndex < DEFAULT_RETRY) {
+                        retryDown()
                     } else {
-                        hideProgress()
                         toast("转换:$it.error")
                         finish()
                     }
                 }, {
                     val retry = _cache.getAsString("retry") ?: ""
                     if ((it.toString().contains("HTTP 500") || "" != retry) && retryIndex < DEFAULT_RETRY) {
-                        // 延迟2s再重试
-                        window.decorView.postDelayed({
-                            retryIndex++
-                            if (retryIndex == DEFAULT_RETRY) {
-                                showRetry()
-                            } else {
-                                toPdf(_cache.getAsString("token"))
-                            }
-                        }, 2000)
+                        retryDown()
                     } else {
                         toast("转换异常:$it")
-                        hideProgress()
                         finish()
                     }
                 })
+    }
+
+    private fun retryDown() {
+        // 延迟2s再重试
+        window.decorView.postDelayed({
+            retryIndex++
+            if (retryIndex == DEFAULT_RETRY) {
+                showRetry()
+            } else {
+                val url = intent.getStringExtra(mUrl)
+                val tempUrl = _cache.getAsString(url)
+                val tempFile = File(tempUrl)
+                val temp = tempUrl.substring(0, tempUrl.lastIndexOf("/") + 1) +
+                        tempFile.nameWithoutExtension + ".pdf"
+                downloadFile(temp, true)
+            }
+        }, 2000)
     }
 
     /**
@@ -345,6 +352,8 @@ class PdfActivity : BaseActivity() {
      */
 
     private fun downloadFile(pdfUrl: String, isTry: Boolean) {
+        disposable?.apply { if (isDisposed) dispose() }
+
         val savePath = intent.getStringExtra(savePath)
         val saveName = intent.getStringExtra(saveName)
         val task = Task(url = pdfUrl, saveName = "$saveName.pdf", savePath = savePath)
@@ -359,7 +368,6 @@ class PdfActivity : BaseActivity() {
                         initRx()
                     } else {
                         toast("下载异常:$it")
-                        hideProgress()
                         finish()
                     }
                 })
@@ -373,21 +381,31 @@ class PdfActivity : BaseActivity() {
      */
     private fun showRetry() {
         AlertDialog.Builder(this)
+                .setTitle("提示")
                 .setMessage("文件转换中，继续等待")
                 .setPositiveButton("确定") { d, _ ->
                     d.dismiss()
                     retryIndex = 0
+                    val url = intent.getStringExtra(mUrl)
+                    val tempUrl = _cache.getAsString(url)
+                    val tempFile = File(tempUrl)
+                    val temp = tempUrl.substring(0, tempUrl.lastIndexOf("/") + 1) +
+                            tempFile.nameWithoutExtension + ".pdf"
+                    downloadFile(temp, true)
                 }
                 .setNegativeButton("退出") { d, _ ->
                     d.dismiss()
                     finish()
                 }
+                .setCancelable(false)
                 .show()
     }
 
 
     override fun onDestroy() {
         super.onDestroy()
+        hideProgress()
+        disRx?.apply { if (isDisposed) dispose() }
         disPdf?.apply { if (isDisposed) dispose() }
         disposable?.apply { if (isDisposed) dispose() }
         UpData.destroy(this)
