@@ -46,6 +46,7 @@ class PdfActivity : BaseActivity() {
 
     private val CODE_PERMISSION_READ = 0
     private var disposable: Disposable? = null
+    private var disPdf: Disposable? = null
     private lateinit var _cache: ACache
     private lateinit var pdfUrl: String
     // 转换pdf失败重试次数
@@ -103,6 +104,7 @@ class PdfActivity : BaseActivity() {
             return
         }
 
+        // 网络文件
         if (url.startsWith("http")) {
             val temp = url.substring(0, url.lastIndexOf("/") + 1) + file.nameWithoutExtension + ".pdf"
             downloadFile(temp, true)
@@ -287,11 +289,13 @@ class PdfActivity : BaseActivity() {
      */
     private fun toPdf(token: String) {
 
+        disPdf?.apply { if (isDisposed) dispose() }
+
         val param = ToPdfParam()
         param.ossfileUrl = pdfUrl
         val body = RequestBody.create(MediaType.parse(
                 "application/json; charset=utf-8"), Gson().toJson(param))
-        Network.getAPI(this).fileToPdf(token, body)
+        disPdf = Network.getAPI(this).fileToPdf(token, body)
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider
