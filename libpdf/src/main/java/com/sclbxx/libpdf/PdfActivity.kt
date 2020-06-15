@@ -138,7 +138,7 @@ class PdfActivity : BaseActivity() {
         disRx = RxBusNew.getInstance().toObservableSticky(Event::class.java)
                 // 检测文件类型
                 .filter {
-                    val extension = File(mUrl).parent
+                    val extension = File(mUrl).extension
                     if (FileUtil.checkType(extension)) {
                         true
                     } else {
