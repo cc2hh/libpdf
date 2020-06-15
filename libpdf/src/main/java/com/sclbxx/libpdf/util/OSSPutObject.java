@@ -21,8 +21,10 @@ import com.alibaba.sdk.android.oss.model.DeleteObjectResult;
 import com.alibaba.sdk.android.oss.model.ObjectMetadata;
 import com.alibaba.sdk.android.oss.model.PutObjectRequest;
 import com.alibaba.sdk.android.oss.model.PutObjectResult;
+import com.sclbxx.libpdf.base.Constant;
 import com.sclbxx.libpdf.http.Network;
 import com.sclbxx.libpdf.pojo.OSSKey;
+import com.tencent.mmkv.MMKV;
 
 import java.io.File;
 import java.io.IOException;
@@ -379,9 +381,9 @@ public class OSSPutObject {
      */
     public Observable<OSSPutObject> connOssKey() {
         Map<String, Object> params = new HashMap();
-        ACache aCache = ACache.get(context);
-        params.put("id", aCache.getAsString("userId"));
-        params.put("fkSchoolId", aCache.getAsString("schoolId"));
+        MMKV kv = MMKV.defaultMMKV();
+        params.put("id", kv.decodeString(Constant.KEY_USERID));
+        params.put("fkSchoolId", kv.decodeString(Constant.KEY_SCHOOLID));
         return Network.getAPI(context).upLoadLogALiYun(params)
                 .map(data -> doResult(data));
     }

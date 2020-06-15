@@ -3,13 +3,13 @@ package com.sclbxx.libpdf.http;
 import android.content.Context;
 import android.util.Log;
 
-import com.sclbxx.libpdf.util.ACache;
+import com.sclbxx.libpdf.base.Constant;
+import com.tencent.mmkv.MMKV;
 
 import java.nio.charset.Charset;
 import java.nio.charset.UnsupportedCharsetException;
 import java.util.concurrent.TimeUnit;
 
-import okhttp3.CacheControl;
 import okhttp3.Interceptor;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -177,7 +177,7 @@ public class Network {
             Log.v("Network", "--------------------------------------------开始打印返回数据----------------------------------------------------");
             String msg = buffer.clone().readString(charset);
             if (msg != null && msg.contains("远程服务繁忙")) {
-                ACache.get(mContext).put("retry", "retry");
+                MMKV.defaultMMKV().encode(Constant.KEY_RETRY, true);
             }
             Log.v("Network", msg);
 //            KLog.json(buffer.clone().readString(charset));

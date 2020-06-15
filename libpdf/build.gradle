@@ -8,8 +8,8 @@ android {
     defaultConfig {
         minSdkVersion 16
         targetSdkVersion 28
-        versionCode 8
-        versionName "1.8"
+        versionCode 9
+        versionName "1.9"
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
@@ -59,8 +59,10 @@ dependencies {
 
     // 下载框架
     api "com.github.ssseasonnn:RxDownload:1.0.9"
-    
+
     // 阿里云服务器oss
     api 'com.aliyun.dpa:oss-android-sdk:2.9.2'
+    // 腾讯mmkv
+    api 'com.tencent:mmkv-static:1.1.2'
 
 }
