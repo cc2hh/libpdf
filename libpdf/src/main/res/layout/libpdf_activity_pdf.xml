@@ -7,6 +7,7 @@
     tools:context=".PdfActivity">
 
     <com.github.barteksc.pdfviewer.PDFView
+        android:background="@color/background"
         android:id="@+id/libpdf_main_pdf"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
