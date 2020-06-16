@@ -49,7 +49,10 @@ class PdfActivity : BaseActivity() {
     private var disposable: Disposable? = null
     private var disPdf: Disposable? = null
     private var disRx: Disposable? = null
+    // 需转换的文件
     private lateinit var pdfUrl: String
+    // 下载的文件
+    private lateinit var loadUrl: String
     // 转换pdf失败重试次数
     private var retryIndex = 0
 
@@ -335,10 +338,7 @@ class PdfActivity : BaseActivity() {
                         .from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe({
                     if (it.success == 1) {
-                        // 延迟1s下载
-                        window.decorView.postDelayed({
-                            downloadFile(it.data.pdfUrl, false)
-                        }, 2000)
+                        downloadFile(it.data.pdfUrl, false)
                     } else if (it.error.contains("转化中") && retryIndex < DEFAULT_RETRY) {
                         // 延迟2s再重试
                         window.decorView.postDelayed({
@@ -378,14 +378,15 @@ class PdfActivity : BaseActivity() {
      *
      */
 
-    private fun downloadFile(pdfUrl: String, isTry: Boolean) {
-        val task = Task(url = pdfUrl, saveName = "$saveName.pdf", savePath = savePath)
+    private fun downloadFile(url: String, isTry: Boolean) {
+        val task = Task(url = url, saveName = "$saveName.pdf", savePath = savePath)
         val file = task.file()
         // 文件已存在，则直接使用
         if (file.exists()) {
             loadPdf(file)
             return
         }
+        loadUrl = url
         disposable = task.download()
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
@@ -395,9 +396,16 @@ class PdfActivity : BaseActivity() {
                 }, onError = {
                     if (isTry) {
                         initRx()
-                    } else {
-                        toast("下载异常:$it")
-                        finish()
+                    } else if (retryIndex < DEFAULT_RETRY) {
+                        // 延迟2s再重试
+                        window.decorView.postDelayed({
+                            retryIndex++
+                            if (retryIndex == DEFAULT_RETRY) {
+                                showRetry(false)
+                            } else {
+                                downloadFile(url, isTry)
+                            }
+                        }, 2000)
                     }
                 })
     }
@@ -418,11 +426,7 @@ class PdfActivity : BaseActivity() {
                     if (type) {
                         toPdf(kv.decodeString(Constant.KEY_TOKEN) ?: "")
                     } else {
-                        val tempUrl = kv.decodeString(mUrl) ?: ""
-                        val tempFile = File(tempUrl)
-                        val temp = tempUrl.substring(0, tempUrl.lastIndexOf("/") + 1) +
-                                tempFile.nameWithoutExtension + ".pdf"
-                        downloadFile(temp, true)
+                        downloadFile(loadUrl, false)
                     }
                 }
                 .setNegativeButton("退出") { d, _ ->
