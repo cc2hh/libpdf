@@ -177,7 +177,7 @@ class PdfActivity : BaseActivity() {
                     pdfUrl = kv.decodeString(mUrl) ?: ""
                     val token = kv.decodeString(Constant.KEY_TOKEN) ?: ""
                     // 源文件已有缓存阿里云地址，直接尝试转换
-                    if (pdfUrl.isNotEmpty()&&token.isNotEmpty()) {
+                    if (pdfUrl.isNotEmpty() && token.isNotEmpty()) {
                         toPdf(token)
                         return@filter false
                     }
@@ -335,7 +335,10 @@ class PdfActivity : BaseActivity() {
                         .from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe({
                     if (it.success == 1) {
-                        downloadFile(it.data.pdfUrl, false)
+                        // 延迟2s再重试
+                        window.decorView.postDelayed({
+                            downloadFile(it.data.pdfUrl, false)
+                        }, 1000)
                     } else if (it.error.contains("转化中") && retryIndex < DEFAULT_RETRY) {
                         // 延迟2s再重试
                         window.decorView.postDelayed({
