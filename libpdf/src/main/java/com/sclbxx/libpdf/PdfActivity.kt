@@ -104,14 +104,14 @@ class PdfActivity : BaseActivity() {
         // 初始化重试次数
         retryIndex = 0
 
-        val tempUel: String? = kv.decodeString(mUrl) ?: ""
+        val tempUel: String = kv.decodeString(mUrl) ?: ""
         when {
             // 不管服务文件有没有，先拼凑链接地址尝试直接下载文件
             // 源文件就是网络文件
             mUrl.startsWith("http") -> tryDown(mUrl, file.nameWithoutExtension)
             // 源文件已有缓存阿里云地址
-            TextUtils.isEmpty(tempUel) -> {
-                tryDown(tempUel!!, File(tempUel).nameWithoutExtension)
+            tempUel.isNotEmpty() -> {
+                tryDown(tempUel, File(tempUel).nameWithoutExtension)
             }
             else -> initRx()
         }
@@ -177,7 +177,7 @@ class PdfActivity : BaseActivity() {
                     pdfUrl = kv.decodeString(mUrl) ?: ""
                     val token = kv.decodeString(Constant.KEY_TOKEN) ?: ""
                     // 源文件已有缓存阿里云地址，直接尝试转换
-                    if (TextUtils.isEmpty(pdfUrl)&&TextUtils.isEmpty(token)) {
+                    if (pdfUrl.isNotEmpty()&&token.isNotEmpty()) {
                         toPdf(token)
                         return@filter false
                     }
