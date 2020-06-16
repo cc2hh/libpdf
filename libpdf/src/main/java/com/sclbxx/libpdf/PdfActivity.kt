@@ -338,7 +338,7 @@ class PdfActivity : BaseActivity() {
                         // 延迟1s下载
                         window.decorView.postDelayed({
                             downloadFile(it.data.pdfUrl, false)
-                        }, 1000)
+                        }, 2000)
                     } else if (it.error.contains("转化中") && retryIndex < DEFAULT_RETRY) {
                         // 延迟2s再重试
                         window.decorView.postDelayed({
