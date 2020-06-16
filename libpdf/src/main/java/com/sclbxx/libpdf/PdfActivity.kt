@@ -335,7 +335,7 @@ class PdfActivity : BaseActivity() {
                         .from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe({
                     if (it.success == 1) {
-                        // 延迟2s再重试
+                        // 延迟1s下载
                         window.decorView.postDelayed({
                             downloadFile(it.data.pdfUrl, false)
                         }, 1000)
