@@ -113,7 +113,7 @@ class FileUtil {
          *
          */
         fun checkType(extension: String): Boolean {
-            return when (extension) {
+            return when (extension.toLowerCase()) {
                 "pdf", "txt", "doc", "docx", "xls", "xlsx", "xml", "ppt", "pptx", "log" -> true
                 else -> false
             }
