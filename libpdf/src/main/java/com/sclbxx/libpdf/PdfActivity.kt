@@ -391,6 +391,8 @@ class PdfActivity : BaseActivity() {
             return
         }
         loadUrl = url
+        disposable?.apply { if (!isDisposed) dispose() }
+
         disposable = task.download()
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
