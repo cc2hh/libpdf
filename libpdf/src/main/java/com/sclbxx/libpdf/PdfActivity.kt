@@ -138,7 +138,6 @@ class PdfActivity : BaseActivity() {
 
         // 转换后的文件
         val file = File("$savePath/$saveName.$EXTENSION")
-        val fileUp = File("$savePath/$saveName.PDF")
 
 
         disRx = RxBusNew.getInstance().toObservableSticky(Event::class.java)
@@ -155,20 +154,19 @@ class PdfActivity : BaseActivity() {
                 }
                 .filter {
                     // 如果保存文件已存在
-                    if (file.exists() || fileUp.exists()) {
-                        val temp = if (file.exists()) file else fileUp
+                    if (file.exists() ) {
                         // 强制重新下载，并且源文件为网络文件
                         if (isDown && mUrl.startsWith("http")) {
                             // 源文件是pdf直接下载，并删除本地pdf文件
                             // 源文件是其他类型走正常转换流程
                             if (File(mUrl).extension.toLowerCase() == EXTENSION) {
-                                FileUtil.deleteFile(temp.absolutePath)
+                                FileUtil.deleteFile(file.absolutePath)
                                 downloadFile(mUrl, false)
                                 return@filter false
                             }
                         } else {
                             //保存文件已存在且没要求强制重新下载，直接加载pdf
-                            loadPdf(temp)
+                            loadPdf(file)
                             return@filter false
                         }
                     } else if (File(mUrl).extension.toLowerCase() == EXTENSION && mUrl.startsWith("http")) {
