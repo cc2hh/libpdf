@@ -6,7 +6,6 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
-import android.text.TextUtils
 import android.view.KeyEvent
 import com.github.barteksc.pdfviewer.util.Util
 import com.google.gson.Gson
@@ -111,10 +110,10 @@ class PdfActivity : BaseActivity() {
         when {
             // 不管服务文件有没有，先拼凑链接地址尝试直接下载文件
             // 源文件就是网络文件
-            mUrl.startsWith("http") -> tryDown(mUrl, file.nameWithoutExtension)
+            mUrl.startsWith("http") -> tryDown(mUrl)
             // 源文件已有缓存阿里云地址
             tempUel.isNotEmpty() -> {
-                tryDown(tempUel, File(tempUel).nameWithoutExtension)
+                tryDown(tempUel)
             }
             else -> initRx()
         }
@@ -126,8 +125,10 @@ class PdfActivity : BaseActivity() {
      * @Date 2020/5/27 18:18
      * @version 1.0
      */
-    private fun tryDown(url: String, extension: String) {
-        val temp = "${url.substring(0, url.lastIndexOf("/") + 1)}$extension.pdf"
+    private fun tryDown(url: String) {
+        val file = File(url)
+        val extension = if (file.extension.toLowerCase() == EXTENSION) file.extension else EXTENSION
+        val temp = "${url.substring(0, url.lastIndexOf("/") + 1) + file.nameWithoutExtension}.$extension"
         downloadFile(temp, true)
     }
 
@@ -136,7 +137,9 @@ class PdfActivity : BaseActivity() {
         disRx?.apply { if (!isDisposed) dispose() }
 
         // 转换后的文件
-        val file = File("$savePath/$saveName.pdf")
+        val file = File("$savePath/$saveName.$EXTENSION")
+        val fileUp = File("$savePath/$saveName.PDF")
+
 
         disRx = RxBusNew.getInstance().toObservableSticky(Event::class.java)
                 // 检测文件类型
@@ -152,22 +155,23 @@ class PdfActivity : BaseActivity() {
                 }
                 .filter {
                     // 如果保存文件已存在
-                    if (file.exists()) {
+                    if (file.exists() || fileUp.exists()) {
+                        val temp = if (file.exists()) file else fileUp
                         // 强制重新下载，并且源文件为网络文件
                         if (isDown && mUrl.startsWith("http")) {
                             // 源文件是pdf直接下载，并删除本地pdf文件
                             // 源文件是其他类型走正常转换流程
-                            if (mUrl.endsWith(".pdf")) {
-                                FileUtil.deleteFile(file.absolutePath)
+                            if (File(mUrl).extension.toLowerCase() == EXTENSION) {
+                                FileUtil.deleteFile(temp.absolutePath)
                                 downloadFile(mUrl, false)
                                 return@filter false
                             }
                         } else {
                             //保存文件已存在且没要求强制重新下载，直接加载pdf
-                            loadPdf(file)
+                            loadPdf(temp)
                             return@filter false
                         }
-                    } else if (mUrl.endsWith(".pdf") && mUrl.startsWith("http")) {
+                    } else if (File(mUrl).extension.toLowerCase() == EXTENSION && mUrl.startsWith("http")) {
                         // 保存文件不存在
                         // 如果源文件就是pdf且是网络文件，直接下载
                         downloadFile(mUrl, false)
@@ -219,8 +223,8 @@ class PdfActivity : BaseActivity() {
                 }
                 .flatMap {
                     when {
-                        //  本地文件已上传阿里云
                         mUrl.startsWith("http") -> Observable.just(mUrl)
+                        //  本地文件已上传阿里云
                         else -> OSSPutObject.getInstance(this).connOssKey()
                                 .map { oss ->
                                     oss.putObjectFromLocalFile(mUrl)
@@ -229,7 +233,7 @@ class PdfActivity : BaseActivity() {
                 }
                 .filter {
                     // 本地pdf上传阿里云，并下载到指定位置
-                    if (it.endsWith(".pdf")) {
+                    if (File(it).extension.toLowerCase() == EXTENSION) {
                         downloadFile(it, false)
                         false
                     } else {
@@ -311,7 +315,7 @@ class PdfActivity : BaseActivity() {
                 .scrollHandle(WpsScrollHandle(this)) // 滑动栏
                 .load()
         // 转换后的文件
-        if (!mUrl.startsWith("http") && (!mUrl.endsWith(".pdf"))) {
+        if (!mUrl.startsWith("http") && File(mUrl).extension.toLowerCase() != EXTENSION) {
             FileUtil.deleteFile(mUrl)
         }
     }
@@ -379,7 +383,7 @@ class PdfActivity : BaseActivity() {
      */
 
     private fun downloadFile(url: String, isTry: Boolean) {
-        val task = Task(url = url, saveName = "$saveName.pdf", savePath = savePath)
+        val task = Task(url = url, saveName = "$saveName.$EXTENSION", savePath = savePath)
         val file = task.file()
         // 文件已存在，则直接使用
         if (file.exists()) {
@@ -463,6 +467,8 @@ class PdfActivity : BaseActivity() {
         private const val DEFAULT_RETRY = 5
         // 获取读写权限
         private const val CODE_PERMISSION_READ = 0
+        // 默认文件后缀名
+        private const val EXTENSION = "pdf"
 
         /**
          *  跳转
@@ -483,6 +489,7 @@ class PdfActivity : BaseActivity() {
 
             ctx.startActivity(intent)
         }
+
 
     }
 }
