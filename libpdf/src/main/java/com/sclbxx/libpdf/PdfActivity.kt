@@ -154,7 +154,7 @@ class PdfActivity : BaseActivity() {
                 }
                 .filter {
                     // 如果保存文件已存在
-                    if (file.exists() ) {
+                    if (file.exists()) {
                         // 强制重新下载，并且源文件为网络文件
                         if (isDown && mUrl.startsWith("http")) {
                             // 源文件是pdf直接下载，并删除本地pdf文件
@@ -261,10 +261,13 @@ class PdfActivity : BaseActivity() {
                                     if (item.success == 1) {
                                         true
                                     } else {
-                                        kv.encode(Constant.KEY_TIMETOKEN,0L)
-                                        initRx()
-//                                        toast("token异常:${item.error}")
-//                                        finish()
+                                        if (timeToken != 0L) {
+                                            kv.encode(Constant.KEY_TIMETOKEN, 0L)
+                                            initRx()
+                                        } else {
+                                            toast("token异常:${item.error}")
+                                            finish()
+                                        }
                                         false
                                     }
                                 }
