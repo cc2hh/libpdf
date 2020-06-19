@@ -261,8 +261,10 @@ class PdfActivity : BaseActivity() {
                                     if (item.success == 1) {
                                         true
                                     } else {
-                                        toast("token异常:${item.error}")
-                                        finish()
+                                        kv.encode(Constant.KEY_TIMETOKEN,0L)
+                                        initRx()
+//                                        toast("token异常:${item.error}")
+//                                        finish()
                                         false
                                     }
                                 }

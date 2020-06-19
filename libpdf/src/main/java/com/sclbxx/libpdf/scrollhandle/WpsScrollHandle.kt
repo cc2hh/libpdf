@@ -71,7 +71,6 @@ class WpsScrollHandle : LinearLayout, ScrollHandle {
             })
 
             dialog.findViewById<Button>(R.id.btn_dialog_handle_cancel).setOnClickListener {
-                MyIMM.hideSoftInput(ctx, et)
                 dialog.dismiss()
             }
 
@@ -79,9 +78,10 @@ class WpsScrollHandle : LinearLayout, ScrollHandle {
                 // 页码从1开始，取值从0开始
                 pdfView?.jumpTo(et.text.toString().toInt() - 1)
                 hideDelayed()
-
-                MyIMM.hideSoftInput(ctx, et)
                 dialog.dismiss()
+            }
+            dialog.setOnDismissListener {
+                MyIMM.hideSoftInput(ctx, et)
             }
             dialog.show()
             val p = dialog.window?.attributes
