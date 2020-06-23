@@ -26,7 +26,7 @@ public interface GetAPI {
      * 阿里云日志服务器 OSS key 获取
      */
     @POST("/zhjy/ossremote/getAccessInfoRemote.action")
-    Observable<OSSKey> upLoadLogALiYun(@QueryMap Map<String, Object> paramInt);
+    Flowable<OSSKey> upLoadLogALiYun(@QueryMap Map<String, Object> paramInt);
 
     @POST("/zhjy-basedata-customer/serverutil/getUserToken.action")
     Flowable<Token> getToken(@Body RequestBody param);

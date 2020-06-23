@@ -20,9 +20,7 @@ import com.sclbxx.libpdf.util.*
 import com.tencent.mmkv.MMKV
 import com.uber.autodispose.AutoDispose
 import com.uber.autodispose.android.lifecycle.AndroidLifecycleScopeProvider
-import io.reactivex.BackpressureStrategy
 import io.reactivex.Flowable
-import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.subscribeBy
@@ -34,6 +32,7 @@ import zlc.season.rxdownload4.download
 import zlc.season.rxdownload4.file
 import zlc.season.rxdownload4.task.Task
 import java.io.File
+import java.lang.NullPointerException
 import java.util.*
 
 /**
@@ -47,14 +46,10 @@ class PdfActivity : BaseActivity() {
     private lateinit var kv: MMKV
     private var disposable: Disposable? = null
     private var disPdf: Disposable? = null
-    private var disRx: Disposable? = null
-    // 需转换的文件
-    private lateinit var pdfUrl: String
     // 下载的文件
     private lateinit var loadUrl: String
     // 转换pdf失败重试次数
     private var retryIndex = 0
-
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -95,26 +90,46 @@ class PdfActivity : BaseActivity() {
      */
     private fun initData() {
 
-        // 本地文件不存在
-        val file = File(mUrl)
-        if (!mUrl.startsWith("http") && !file.exists()) {
-            toast("文件不存在")
-            finish()
-            return
-        }
-
         // 初始化重试次数
         retryIndex = 0
+        // 源文件
+        val file = File(mUrl)
+        // 源文件的后缀名，转小写后
+        val extension = file.extension.toLowerCase()
+        // 转换后的文件
+        val filePdf = File("$savePath/$saveName.$EXTENSION")
+        // 源文件对应的阿里云地址
+        val ossUrl: String = kv.decodeString(mUrl)
 
-        val tempUel: String = kv.decodeString(mUrl) ?: ""
+        // 不管服务文件有没有，先拼凑链接地址尝试直接下载文件
         when {
-            // 不管服务文件有没有，先拼凑链接地址尝试直接下载文件
-            // 源文件就是网络文件
-            mUrl.startsWith("http") -> tryDown(mUrl)
-            // 源文件已有缓存阿里云地址
-            tempUel.isNotEmpty() -> {
-                tryDown(tempUel)
+            // 检测文件类型
+            !FileUtil.checkType(extension) -> {
+                toast("$extension 为不支持的文件类型")
+                finish()
             }
+            // 网络文件类型
+            mUrl.startsWith("http") -> {
+                if (isDown) {
+                    // 强制重新下载，删除本地pdf文件
+                    FileUtil.deleteFile(filePdf.absolutePath)
+                } else if (filePdf.exists()) {
+                    // 没要求强制重新下载，转换后的文件已存在
+                    // 直接加载pdf
+                    loadPdf(filePdf)
+                    return
+                }
+                tryDown(mUrl)
+            }
+            // 源文件是本地文件且不存在
+            !file.exists() -> {
+                toast("文件不存在")
+                finish()
+            }
+            // 源文件是本地文件且存在，转换后的文件已存在
+            filePdf.exists() -> loadPdf(filePdf)
+            // 源文件是本地文件且存在，已有缓存阿里云地址
+            !ossUrl.isNullOrEmpty() -> tryDown(ossUrl)
             else -> initRx()
         }
     }
@@ -127,77 +142,30 @@ class PdfActivity : BaseActivity() {
      */
     private fun tryDown(url: String) {
         val file = File(url)
+        // 兼容后缀名大小写
         val extension = if (file.extension.toLowerCase() == EXTENSION) file.extension else EXTENSION
         val temp = "${url.substring(0, url.lastIndexOf("/") + 1) + file.nameWithoutExtension}.$extension"
         downloadFile(temp, true)
     }
 
+    /**
+     *  pdf转换主体流程
+     * @Author cc
+     * @Date 2020/5/27 18:18
+     * @version 1.0
+     */
     private fun initRx() {
-
-        disRx?.apply { if (!isDisposed) dispose() }
-
-        // 转换后的文件
-        val file = File("$savePath/$saveName.$EXTENSION")
-
-
-        disRx = RxBusNew.getInstance().toObservableSticky(Event::class.java)
-                // 检测文件类型
+        // 接受管家服务连接信息
+        RxBusNew.getInstance().toObservableSticky(Event::class.java)
                 .filter {
-                    val extension = File(mUrl).extension
-                    if (FileUtil.checkType(extension)) {
-                        true
-                    } else {
-                        toast("$extension 为不支持的文件类型")
-                        finish()
-                        false
-                    }
-                }
-                .filter {
-                    // 如果保存文件已存在
-                    if (file.exists()) {
-                        // 强制重新下载，并且源文件为网络文件
-                        if (isDown && mUrl.startsWith("http")) {
-                            // 源文件是pdf直接下载，并删除本地pdf文件
-                            // 源文件是其他类型走正常转换流程
-                            if (File(mUrl).extension.toLowerCase() == EXTENSION) {
-                                FileUtil.deleteFile(file.absolutePath)
-                                downloadFile(mUrl, false)
-                                return@filter false
-                            }
-                        } else {
-                            //保存文件已存在且没要求强制重新下载，直接加载pdf
-                            loadPdf(file)
-                            return@filter false
-                        }
-                    } else if (File(mUrl).extension.toLowerCase() == EXTENSION && mUrl.startsWith("http")) {
-                        // 保存文件不存在
-                        // 如果源文件就是pdf且是网络文件，直接下载
-                        downloadFile(mUrl, false)
-                        return@filter false
-                    }
-                    true
-                }
-                .filter {
-                    // 判断源文件是否已上传到阿里云
-                    pdfUrl = kv.decodeString(mUrl) ?: ""
-                    val token = kv.decodeString(Constant.KEY_TOKEN) ?: ""
-                    // 源文件已有缓存阿里云地址，直接尝试转换
-                    if (pdfUrl.isNotEmpty() && token.isNotEmpty()) {
-                        toPdf(token)
-                        return@filter false
-                    }
-                    true
-                }
-                .filter {
-                    if (it.boolean)
-                        true
+                    if (it.boolean) true
                     else {
                         hideProgress()
                         AlertDialog.Builder(this)
                                 .setTitle("提示")
                                 .setMessage("尝试重连管家服务")
                                 .setPositiveButton("确定") { v, _ ->
-                                    init()
+                                    UpData.updateByService(this)
                                     v.dismiss()
                                 }
                                 .setNegativeButton("退出") { v, _ ->
@@ -209,7 +177,9 @@ class PdfActivity : BaseActivity() {
                         false
                     }
                 }
+                // 切换到子线程，网络请求
                 .observeOn(Schedulers.io())
+                // oss上传文件需要参数，所以先进行参数缓存
                 .map {
                     val login = XMLUtils.readBaseInfo()
                     kv.encode(Constant.KEY_USERID, login.studentId)
@@ -220,54 +190,46 @@ class PdfActivity : BaseActivity() {
                     Network.URL = login.url.replace("/zhjy", "")
                 }
                 .flatMap {
+                    val ossUrl = kv.decodeString(mUrl)
                     when {
-                        mUrl.startsWith("http") -> Observable.just(mUrl)
-                        //  本地文件已上传阿里云
+                        mUrl.startsWith("http") -> Flowable.just(mUrl)
+                        !ossUrl.isNullOrEmpty() -> Flowable.just(ossUrl)
+                        //  本地文件上传阿里云
                         else -> OSSPutObject.getInstance(this).connOssKey()
-                                .map { oss ->
-                                    oss.putObjectFromLocalFile(mUrl)
-                                }
+                                .map { oss -> oss.putObjectFromLocalFile(mUrl) }
                     }
                 }
-                .filter {
-                    // 本地pdf上传阿里云，并下载到指定位置
-                    if (File(it).extension.toLowerCase() == EXTENSION) {
-                        downloadFile(it, false)
-                        false
-                    } else {
-                        true
-                    }
-                }
-                .toFlowable(BackpressureStrategy.BUFFER)
                 .flatMap {
                     // 缓存已上传到阿里云的源文件连接
                     kv.encode(mUrl, it)
-                    pdfUrl = it
                     // token 每天头次访问时更新
                     val timeToken = kv.decodeLong(Constant.KEY_TIMETOKEN)
-                    var token = kv.decodeString(Constant.KEY_TOKEN) ?: ""
+                    var token = kv.decodeString(Constant.KEY_TOKEN)
                     // 获取时间过10小时就更新token
-                    if (Date().time - timeToken > 10 * 60 * 60 * 1000) {
-
+                    if (Date().time - timeToken <= 10 * 60 * 60 * 1000 && !token.isNullOrEmpty()) {
+                        Flowable.just(token)
+                    } else {
+                        val account = kv.decodeString(Constant.KEY_ACCOUNT)
+                        val pwd = kv.decodeString(Constant.KEY_PWD)
+                        // 检查账号或密码为空
+                        if (account.isNullOrEmpty() || pwd.isNullOrEmpty()) {
+                            throw NullPointerException("账号或者密码为空")
+                        }
                         val param = TokenParam()
-                        param.accountName = kv.decodeString(Constant.KEY_ACCOUNT) ?: ""
-                        param.password = UpData.updateService
-                                .decryptAndEncrypt(param.accountName, kv.decodeString(Constant.KEY_PWD)
-                                        ?: "")
+                        param.accountName = account
+                        param.password = UpData.updateService.decryptAndEncrypt(account, pwd)
+                        val strParam = Gson().toJson(param)
+                        println("打印参数---getToken:$strParam")
                         val body = RequestBody.create(MediaType.parse(
-                                "application/json; charset=utf-8"), Gson().toJson(param))
+                                "application/json; charset=utf-8"), strParam)
                         Network.getAPI(this).getToken(body)
+                                .observeOn(AndroidSchedulers.mainThread())
                                 .filter { item ->
                                     if (item.success == 1) {
                                         true
                                     } else {
-                                        if (timeToken != 0L) {
-                                            kv.encode(Constant.KEY_TIMETOKEN, 0L)
-                                            initRx()
-                                        } else {
-                                            toast("token异常:${item.error}")
-                                            finish()
-                                        }
+                                        toast("token异常:${item.error}")
+                                        finish()
                                         false
                                     }
                                 }
@@ -278,16 +240,86 @@ class PdfActivity : BaseActivity() {
                                     kv.encode(Constant.KEY_TIMETOKEN, Date().time)
                                     token
                                 }
-                    } else {
-                        Flowable.just(token)
                     }
                 }
                 .observeOn(AndroidSchedulers.mainThread())
                 .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider
                         .from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe({ toPdf(it) }, {
-                    toast(it.toString())
+                    toast("Rx异常：$it")
                     finish()
+                })
+    }
+
+    /**
+     * 转换成pdf
+     * @Author cc
+     * @Date 2020/5/26 16:02
+     * @version 1.0
+     */
+    private fun toPdf(token: String) {
+
+        disPdf?.apply { if (!isDisposed) dispose() }
+
+        val param = ToPdfParam()
+        param.ossfileUrl = kv.decodeString(mUrl)
+        val strParam = Gson().toJson(param)
+        println("打印参数---fileToPdf:$strParam")
+        val body = RequestBody.create(MediaType.parse(
+                "application/json; charset=utf-8"), strParam)
+        disPdf = Network.getAPI(this).fileToPdf(token, body)
+                .subscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider
+                        .from(this, Lifecycle.Event.ON_DESTROY)))
+                .subscribe({
+                    when {
+                        it.success == 1 -> downloadFile(it.data.pdfUrl, false)
+                        // token 错误，重新获取token
+                        it.error.contains("token") -> {
+                            kv.encode(Constant.KEY_TIMETOKEN, 0L)
+                            RxBusNew.getInstance().postSticky(Event(Event.CODE_MDM, true))
+                        }
+                        else -> showRetry(true, it.error)
+                    }
+                }, {
+                    if ((it.toString().contains("HTTP 500") || kv.decodeBool(Constant.KEY_RETRY))) {
+                        showRetry(true, it.toString())
+                    } else {
+                        toast("转换异常:$it")
+                        finish()
+                    }
+                })
+    }
+
+    /**
+     *  下载文件
+     *
+     */
+    private fun downloadFile(url: String, isTry: Boolean) {
+        val task = Task(url = url, saveName = "$saveName.$EXTENSION", savePath = savePath)
+        val file = task.file()
+        // 文件已存在，则直接使用
+        if (file.exists()) {
+            loadPdf(file)
+            return
+        }
+        loadUrl = url
+
+        disposable?.apply { if (!isDisposed) dispose() }
+
+        disposable = task.download()
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeBy(onNext = {
+                }, onComplete = {
+                    loadPdf(file)
+                }, onError = {
+                    if (isTry) {
+                        initRx()
+                    } else {
+                        showRetry(false, it.toString())
+                    }
                 })
     }
 
@@ -300,6 +332,12 @@ class PdfActivity : BaseActivity() {
      */
     private fun loadPdf(file: File) {
 
+        // 删除源文件是本地且不是pdf的文件
+        if (!mUrl.startsWith("http") && File(mUrl).extension.toLowerCase() != EXTENSION) {
+            FileUtil.deleteFile(mUrl)
+        }
+
+        // 缓存的该文件之前关闭时页码，默认0
         val cPager = kv.decodeInt("${savePath}_$saveName")
         libpdf_main_pdf.fromFile(file)
                 .pageSnap(true)
@@ -313,110 +351,10 @@ class PdfActivity : BaseActivity() {
                     hideProgress()
                     toast("pdf打开:$it")
                 }
-                .onLoad { hideProgress() }
+                .onLoad { hideProgress() }  // 加载完成
                 .spacing(Util.getDP(this, 8)) // 每页间隔（需要添加控件背景）
                 .scrollHandle(WpsScrollHandle(this)) // 滑动栏
                 .load()
-        // 转换后的文件
-        if (!mUrl.startsWith("http") && File(mUrl).extension.toLowerCase() != EXTENSION) {
-            FileUtil.deleteFile(mUrl)
-        }
-    }
-
-
-    /**
-     * 转换成pdf
-     * @Author cc
-     * @Date 2020/5/26 16:02
-     * @version 1.0
-     */
-    private fun toPdf(token: String) {
-
-        disPdf?.apply { if (!isDisposed) dispose() }
-
-        val param = ToPdfParam()
-        param.ossfileUrl = pdfUrl
-        val body = RequestBody.create(MediaType.parse(
-                "application/json; charset=utf-8"), Gson().toJson(param))
-        disPdf = Network.getAPI(this).fileToPdf(token, body)
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .`as`(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider
-                        .from(this, Lifecycle.Event.ON_DESTROY)))
-                .subscribe({
-                    if (it.success == 1) {
-                        downloadFile(it.data.pdfUrl, false)
-                    } else if (it.error.contains("转化中") && retryIndex < DEFAULT_RETRY) {
-                        // 延迟2s再重试
-                        window.decorView.postDelayed({
-                            retryIndex++
-                            if (retryIndex == DEFAULT_RETRY) {
-                                showRetry(true)
-                            } else {
-                                toPdf(token)
-                            }
-                        }, 2000)
-
-                    } else {
-                        toast("转换:$it.error")
-                        finish()
-                    }
-                }, {
-                    val retry = kv.decodeBool(Constant.KEY_RETRY)
-                    if ((it.toString().contains("HTTP 500") || retry) && retryIndex < DEFAULT_RETRY) {
-                        // 延迟2s再重试
-                        window.decorView.postDelayed({
-                            retryIndex++
-                            if (retryIndex == DEFAULT_RETRY) {
-                                showRetry(true)
-                            } else {
-                                toPdf(token)
-                            }
-                        }, 2000)
-                    } else {
-                        toast("转换异常:$it")
-                        finish()
-                    }
-                })
-    }
-
-    /**
-     *  下载文件
-     *
-     */
-
-    private fun downloadFile(url: String, isTry: Boolean) {
-        val task = Task(url = url, saveName = "$saveName.$EXTENSION", savePath = savePath)
-        val file = task.file()
-        // 文件已存在，则直接使用
-        if (file.exists()) {
-            loadPdf(file)
-            return
-        }
-        loadUrl = url
-        disposable?.apply { if (!isDisposed) dispose() }
-
-        disposable = task.download()
-                .subscribeOn(AndroidSchedulers.mainThread())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribeBy(onNext = {
-                }, onComplete = {
-                    loadPdf(file)
-                }, onError = {
-                    if (isTry) {
-                        initRx()
-                    } else if (retryIndex < DEFAULT_RETRY) {
-                        // 延迟2s再重试
-                        window.decorView.postDelayed({
-                            retryIndex++
-                            if (retryIndex == DEFAULT_RETRY) {
-                                showRetry(false)
-                            } else {
-                                downloadFile(url, isTry)
-                            }
-                        }, 2000)
-                    }
-                })
     }
 
     /**
@@ -425,34 +363,50 @@ class PdfActivity : BaseActivity() {
      * @Date 2020/5/26 16:45
      * @version 1.0
      */
-    private fun showRetry(type: Boolean) {
-        AlertDialog.Builder(this)
-                .setTitle("提示")
-                .setMessage("文件转换中，继续等待")
-                .setPositiveButton("确定") { d, _ ->
-                    d.dismiss()
-                    retryIndex = 0
-                    if (type) {
-                        toPdf(kv.decodeString(Constant.KEY_TOKEN) ?: "")
-                    } else {
-                        downloadFile(loadUrl, false)
-                    }
-                }
-                .setNegativeButton("退出") { d, _ ->
-                    d.dismiss()
-                    finish()
-                }
-                .setCancelable(false)
-                .show()
+    private fun showRetry(type: Boolean, msg: String) {
+        // 延迟2s再重试
+        window.decorView.postDelayed({
+            retryIndex++
+            if (retryIndex >= DEFAULT_RETRY) {
+                toast("重试：$msg")
+                retryIndex = 0
+                AlertDialog.Builder(this)
+                        .setTitle("提示")
+                        .setMessage("文件转换中，继续等待\n $msg")
+                        .setPositiveButton("确定") { d, _ ->
+                            swichOpera(type)
+                            d.dismiss()
+                        }
+                        .setNegativeButton("退出") { d, _ ->
+                            d.dismiss()
+                            finish()
+                        }
+                        .setCancelable(false)
+                        .show()
+            } else {
+                swichOpera(type)
+            }
+        }, 2000)
     }
 
+    /**
+     *  在那阶段发生的错误，从那阶段重试
+     * @Author cc
+     * @Date 2020/5/26 16:45
+     * @version 1.0
+     */
+    private fun swichOpera(type: Boolean) {
+        if (type) {
+            toPdf(kv.decodeString(Constant.KEY_TOKEN) ?: "")
+        } else {
+            downloadFile(loadUrl, false)
+        }
+    }
 
     override fun onDestroy() {
         super.onDestroy()
         hideProgress()
         kv.encode("${savePath}_$saveName", libpdf_main_pdf.currentPage)
-        disRx?.apply { if (!isDisposed) dispose() }
-        disPdf?.apply { if (!isDisposed) dispose() }
         disposable?.apply { if (!isDisposed) dispose() }
         UpData.destroy(this)
         RxBusNew.getInstance().reset()

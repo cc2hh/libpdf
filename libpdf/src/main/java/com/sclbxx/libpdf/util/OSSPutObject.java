@@ -379,7 +379,7 @@ public class OSSPutObject {
     /**
      * OSS key 获取
      */
-    public Observable<OSSPutObject> connOssKey() {
+    public Flowable<OSSPutObject> connOssKey() {
         Map<String, Object> params = new HashMap();
         MMKV kv = MMKV.defaultMMKV();
         params.put("id", kv.decodeString(Constant.KEY_USERID));

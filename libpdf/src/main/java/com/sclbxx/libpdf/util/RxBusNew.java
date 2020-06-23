@@ -3,6 +3,8 @@ package com.sclbxx.libpdf.util;
 
 import com.jakewharton.rxrelay2.ReplayRelay;
 
+import io.reactivex.BackpressureStrategy;
+import io.reactivex.Flowable;
 import io.reactivex.Observable;
 import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.schedulers.Schedulers;
@@ -45,11 +47,12 @@ public class RxBusNew {
     /**
      * 使用Rxlifecycle解决RxJava引起的内存泄漏
      */
-    public <T> Observable<T> toObservable(final Class<T> eventType) {
+    public <T> Flowable<T> toObservable(final Class<T> eventType) {
         return mBus.ofType(eventType)
                 .subscribeOn(Schedulers.io())
                 .unsubscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread());
+                .observeOn(AndroidSchedulers.mainThread())
+                .toFlowable(BackpressureStrategy.BUFFER);
 //                .as(AutoDispose.autoDisposable(AndroidLifecycleScopeProvider.from(owner,
 //                Lifecycle.Event.ON_DESTROY)));
     }
@@ -81,10 +84,11 @@ public class RxBusNew {
      * 根据传递的 eventType 类型返回特定类型(eventType)的 被观察者
      * 使用Rxlifecycle解决RxJava引起的内存泄漏
      */
-    public <T> Observable<T> toObservableSticky(final Class<T> eventType) {
-        return  mBusSticky.ofType(eventType)
-                    .subscribeOn(Schedulers.io())
-                    .unsubscribeOn(Schedulers.io())
-                    .observeOn(AndroidSchedulers.mainThread());
+    public <T> Flowable<T> toObservableSticky(final Class<T> eventType) {
+        return mBusSticky.ofType(eventType)
+                .subscribeOn(Schedulers.io())
+                .unsubscribeOn(Schedulers.io())
+                .observeOn(AndroidSchedulers.mainThread())
+                .toFlowable(BackpressureStrategy.BUFFER);
     }
 }
