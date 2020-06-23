@@ -72,7 +72,18 @@ class PdfActivity : BaseActivity() {
     private fun init() {
         MMKV.initialize(this)
         kv = MMKV.defaultMMKV()
+        connectMdm()
+        initData()
 
+    }
+
+    /**
+     *  连接管家服务
+     * @Author cc
+     * @Date 2020/6/23 14:27
+     * @version 1.0
+     */
+    private fun connectMdm() {
         showProgress().setOnKeyListener { _, keyCode, _ ->
             if (keyCode == KeyEvent.KEYCODE_BACK) {
                 finish()
@@ -80,8 +91,6 @@ class PdfActivity : BaseActivity() {
             false
         }
         UpData.updateByService(this)
-        initData()
-
     }
 
     /**
@@ -165,7 +174,7 @@ class PdfActivity : BaseActivity() {
                                 .setTitle("提示")
                                 .setMessage("尝试重连管家服务")
                                 .setPositiveButton("确定") { v, _ ->
-                                    UpData.updateByService(this)
+                                    connectMdm()
                                     v.dismiss()
                                 }
                                 .setNegativeButton("退出") { v, _ ->
@@ -213,11 +222,15 @@ class PdfActivity : BaseActivity() {
                         val pwd = kv.decodeString(Constant.KEY_PWD)
                         // 检查账号或密码为空
                         if (account.isNullOrEmpty() || pwd.isNullOrEmpty()) {
-                            throw NullPointerException("账号或者密码为空")
+                            throw Exception("账号或者密码为空")
                         }
                         val param = TokenParam()
                         param.accountName = account
-                        param.password = UpData.updateService.decryptAndEncrypt(account, pwd)
+                        try {
+                            param.password = UpData.updateService.decryptAndEncrypt(account, pwd)
+                        } catch (e: Exception) {
+                            throw Exception("管家服务：$e")
+                        }
                         val strParam = Gson().toJson(param)
                         println("打印参数---getToken:$strParam")
                         val body = RequestBody.create(MediaType.parse(
