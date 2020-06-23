@@ -99,7 +99,7 @@ class PdfActivity : BaseActivity() {
         // 转换后的文件
         val filePdf = File("$savePath/$saveName.$EXTENSION")
         // 源文件对应的阿里云地址
-        val ossUrl: String = kv.decodeString(mUrl)
+        val ossUrl = kv.decodeString(mUrl)
 
         // 不管服务文件有没有，先拼凑链接地址尝试直接下载文件
         when {
