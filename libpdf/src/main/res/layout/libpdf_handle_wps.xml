@@ -1,25 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content"
-    android:background="@drawable/handle_bg"
-    android:orientation="horizontal"
-    android:padding="8dp">
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
 
-    <TextView
-        android:id="@+id/tv_handle_wps_current"
+    <LinearLayout
+        android:id="@+id/ll_handle_wps"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        tools:text="12" />
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="8dp"
+        android:background="@drawable/handle_bg"
+        android:orientation="horizontal"
+        android:padding="8dp">
 
-    <TextView
-        android:id="@+id/tv_handle_wps_all"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:textColor="@color/white"
-        android:textSize="16sp"
-        tools:text=" / 52" />
-</LinearLayout>
+        <TextView
+            android:id="@+id/tv_handle_wps_current"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            tools:text="12" />
+
+        <TextView
+            android:id="@+id/tv_handle_wps_all"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:textColor="@color/white"
+            android:textSize="16sp"
+            tools:text=" / 52" />
+    </LinearLayout>
+
+    <ImageView
+        android:id="@+id/iv_handle_wps"
+        android:layout_width="32dp"
+        android:layout_height="48dp"
+        android:layout_alignParentRight="true"
+        app:srcCompat="@drawable/scroll" />
+</RelativeLayout>

@@ -51,7 +51,7 @@ public class OSSPutObject {
     private static String testBucket = "istudyway-huabei3";
     private static String key;
     private String uploadFilePath;
-    private static Context context;
+    private Context context;
     private static OSS oss = null;
     private static OSSPutObject ossPutObject = null;
 
@@ -62,7 +62,7 @@ public class OSSPutObject {
         return ossPutObject;
     }
 
-    public OSSPutObject(Context context) {
+    private OSSPutObject(Context context) {
         this.context = context;
 //        connOssKey();
 //        connOssKey(path);
