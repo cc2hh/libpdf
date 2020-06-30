@@ -289,7 +289,7 @@ class PdfActivity : BaseActivity() {
                     when {
                         it.success == 1 -> downloadFile(it.data.pdfUrl, false)
                         // token 错误，重新获取token
-                        it.error.contains("token") -> {
+                        it.error.contains("token") || it.error.contains("用户不存在") -> {
                             kv.encode(Constant.KEY_TIMETOKEN, 0L)
                             RxBusNew.getInstance().postSticky(Event(Event.CODE_MDM, true))
                         }
