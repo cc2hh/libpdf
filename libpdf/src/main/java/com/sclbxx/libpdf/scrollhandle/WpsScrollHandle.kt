@@ -116,7 +116,7 @@ class WpsScrollHandle : RelativeLayout, ScrollHandle {
             when (event.action) {
                 MotionEvent.ACTION_DOWN, MotionEvent.ACTION_POINTER_DOWN -> {
                     pdfView?.stopFling()
-                    handler.removeCallbacks(hidePageScrollerRunnable)
+                    handler?.removeCallbacks(hidePageScrollerRunnable)
                     currentPos = event.rawY - iv.y
                 }
                 MotionEvent.ACTION_MOVE -> {
@@ -151,7 +151,7 @@ class WpsScrollHandle : RelativeLayout, ScrollHandle {
         if (!shown()) {
             show()
         } else {
-            handler.removeCallbacks(hidePageScrollerRunnable)
+            handler?.removeCallbacks(hidePageScrollerRunnable)
         }
 
         pdfView?.let {
@@ -200,7 +200,7 @@ class WpsScrollHandle : RelativeLayout, ScrollHandle {
     }
 
     override fun hideDelayed() {
-        handler.postDelayed(hidePageScrollerRunnable, 1000)
+        handler?.postDelayed(hidePageScrollerRunnable, 1000)
     }
 
     override fun setupLayout(pdfView: PDFView) {
