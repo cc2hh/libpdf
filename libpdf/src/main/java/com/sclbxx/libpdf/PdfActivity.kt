@@ -358,11 +358,11 @@ class PdfActivity : BaseActivity() {
                 .linkHandler { }
                 .onPageError { page, t ->
                     hideProgress()
-                    toast("pdf加载:$page 页 $t")
+                    toast("pdf文件错误，加载:$page 页 $t")
                 }
                 .onError {
                     hideProgress()
-                    toast("pdf打开:$it")
+                    toast("pdf文件损坏:$it")
                 }
                 .onLoad { hideProgress() }  // 加载完成
                 .spacing(Util.getDP(this, 8)) // 每页间隔（需要添加控件背景）
