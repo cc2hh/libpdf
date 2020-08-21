@@ -39,9 +39,6 @@ data class Token(
             @SerializedName("userName")
             val userName: String,
             @SerializedName("userType")
-            val userType: Int,
-            @SerializedName("activeTime")
-            val activeTime: Int
-
+            val userType: Int
     )
 }
