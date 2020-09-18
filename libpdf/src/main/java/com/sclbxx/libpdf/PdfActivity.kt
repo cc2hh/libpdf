@@ -321,7 +321,8 @@ class PdfActivity : BaseActivity() {
 
         disposable?.apply { if (!isDisposed) dispose() }
 
-        disposable = task.download()
+        task.download()
+        disposable = task.download(request = MySSLRequest())
                 .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(onNext = {

@@ -40,5 +40,6 @@ data class Token(
             val userName: String,
             @SerializedName("userType")
             val userType: Int
+
     )
 }
