@@ -1,6 +1,7 @@
 package com.sclbxx.libpdf
 
 import android.Manifest
+import android.app.Activity
 import android.arch.lifecycle.Lifecycle
 import android.content.Context
 import android.content.Intent
@@ -365,7 +366,10 @@ class PdfActivity : BaseActivity() {
                     hideProgress()
                     toast("pdf文件损坏:$it")
                 }
-                .onLoad { hideProgress() }  // 加载完成
+                .onLoad {
+                    hideProgress()
+                    resultOk = Activity.RESULT_OK
+                }  // 加载完成
                 .spacing(Util.getDP(this, 8)) // 每页间隔（需要添加控件背景）
                 .scrollHandle(WpsScrollHandle(this)) // 滑动栏
                 .load()
@@ -424,6 +428,8 @@ class PdfActivity : BaseActivity() {
         disposable?.apply { if (!isDisposed) dispose() }
         UpData.destroy(this)
         RxBusNew.getInstance().reset()
+
+        setResult(resultOk)
     }
 
     companion object {
@@ -442,6 +448,7 @@ class PdfActivity : BaseActivity() {
         private const val CODE_PERMISSION_READ = 0
         // 默认文件后缀名
         private const val EXTENSION = "pdf"
+        private var resultOk = Activity.RESULT_CANCELED
 
         /**
          *  跳转
@@ -452,15 +459,15 @@ class PdfActivity : BaseActivity() {
          * @param down true：强制下载文件；false：如果文件已存在则直接打开，不存在则进行转换后下载并打开
          */
         fun start(ctx: Context, url: String, path: String = FileUtil.getDirPath(ctx) + "/pdf/",
-                  name: String = File(url).nameWithoutExtension, down: Boolean = false) {
+                  name: String = File(url).nameWithoutExtension, down: Boolean = false, code: Int = 0) {
             val intent = Intent(ctx, PdfActivity::class.java)
 
             mUrl = url
             savePath = path
             saveName = name
             isDown = down
-
-            ctx.startActivity(intent)
+            resultOk = Activity.RESULT_CANCELED
+            (ctx as Activity).startActivityForResult(intent, code)
         }
 
 
