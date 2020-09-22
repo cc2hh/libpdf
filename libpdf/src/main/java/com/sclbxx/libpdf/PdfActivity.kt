@@ -422,8 +422,8 @@ class PdfActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {
-        super.onBackPressed()
         setResult(resultOk)
+        finish()
     }
 
     override fun onDestroy() {
