@@ -87,7 +87,7 @@ class PdfActivity : BaseActivity() {
     private fun connectMdm() {
         showProgress().setOnKeyListener { _, keyCode, _ ->
             if (keyCode == KeyEvent.KEYCODE_BACK) {
-                finish()
+                onBackPressed()
             }
             false
         }
@@ -116,7 +116,7 @@ class PdfActivity : BaseActivity() {
             // 检测文件类型
             !FileUtil.checkType(extension) -> {
                 toast("$extension 为不支持的文件类型")
-                finish()
+                onBackPressed()
             }
             // 网络文件类型
             mUrl.startsWith("http") -> {
@@ -134,7 +134,7 @@ class PdfActivity : BaseActivity() {
             // 源文件是本地文件且不存在
             !file.exists() -> {
                 toast("文件不存在")
-                finish()
+                onBackPressed()
             }
             // 源文件是本地文件且存在，转换后的文件已存在
             filePdf.exists() -> loadPdf(filePdf)
@@ -180,7 +180,7 @@ class PdfActivity : BaseActivity() {
                                 }
                                 .setNegativeButton("退出") { v, _ ->
                                     v.dismiss()
-                                    finish()
+                                    onBackPressed()
                                 }
                                 .setCancelable(false)
                                 .show()
@@ -243,7 +243,7 @@ class PdfActivity : BaseActivity() {
                                         true
                                     } else {
                                         toast("token异常:${item.error}")
-                                        finish()
+                                        onBackPressed()
                                         false
                                     }
                                 }
@@ -261,7 +261,7 @@ class PdfActivity : BaseActivity() {
                         .from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe({ toPdf(it) }, {
                     toast("Rx异常：$it")
-                    finish()
+                    onBackPressed()
                 })
     }
 
@@ -301,7 +301,7 @@ class PdfActivity : BaseActivity() {
                         showRetry(true, it.toString())
                     } else {
                         toast("转换异常:$it")
-                        finish()
+                        onBackPressed()
                     }
                 })
     }
@@ -397,7 +397,7 @@ class PdfActivity : BaseActivity() {
                         }
                         .setNegativeButton("退出") { d, _ ->
                             d.dismiss()
-                            finish()
+                            onBackPressed()
                         }
                         .setCancelable(false)
                         .show()
@@ -421,6 +421,11 @@ class PdfActivity : BaseActivity() {
         }
     }
 
+    override fun onBackPressed() {
+        super.onBackPressed()
+        setResult(resultOk)
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         hideProgress()
@@ -428,8 +433,6 @@ class PdfActivity : BaseActivity() {
         disposable?.apply { if (!isDisposed) dispose() }
         UpData.destroy(this)
         RxBusNew.getInstance().reset()
-
-        setResult(resultOk)
     }
 
     companion object {
