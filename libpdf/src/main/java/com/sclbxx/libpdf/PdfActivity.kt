@@ -5,6 +5,7 @@ import android.app.Activity
 import android.arch.lifecycle.Lifecycle
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.view.KeyEvent
@@ -323,7 +324,9 @@ class PdfActivity : BaseActivity() {
 
         disposable?.apply { if (!isDisposed) dispose() }
 
-        disposable = task.download(request = MySSLRequest())
+        val download = if (Build.VERSION.SDK_INT < 29) task.download() else
+            task.download(request = MySSLRequest())
+        disposable = download
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(onNext = {
@@ -428,11 +431,11 @@ class PdfActivity : BaseActivity() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
         kv.encode("${savePath}_$saveName", libpdf_main_pdf.currentPage)
         disposable?.apply { if (!isDisposed) dispose() }
         UpData.destroy(this)
         RxBusNew.getInstance().reset()
+        super.onDestroy()
     }
 
     companion object {
