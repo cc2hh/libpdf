@@ -55,7 +55,8 @@ class PdfActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.libpdf_activity_pdf)
-        requestPermissions(CODE_PERMISSION_READ, "存储", Manifest.permission.READ_EXTERNAL_STORAGE)
+        requestPermissions(CODE_PERMISSION_READ, "存储", Manifest.permission.WRITE_EXTERNAL_STORAGE,
+                Manifest.permission.READ_EXTERNAL_STORAGE)
 
     }
 
@@ -294,11 +295,11 @@ class PdfActivity : BaseActivity() {
                             kv.encode(Constant.KEY_TIMETOKEN, 0L)
                             RxBusNew.getInstance().postSticky(Event(Event.CODE_MDM, true))
                         }
-                        else -> showRetry(true, it.error)
+                        else -> showRetry(true, "toPdf:${it.error}")
                     }
                 }, {
                     if ((it.toString().contains("HTTP 500") || kv.decodeBool(Constant.KEY_RETRY))) {
-                        showRetry(true, it.toString())
+                        showRetry(true, "toPdf:$it")
                     } else {
                         toast("转换异常:$it")
                         onBackPressed()
@@ -322,9 +323,8 @@ class PdfActivity : BaseActivity() {
 
         disposable?.apply { if (!isDisposed) dispose() }
 
-        task.download()
         disposable = task.download(request = MySSLRequest())
-                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(onNext = {
                 }, onComplete = {
@@ -333,7 +333,7 @@ class PdfActivity : BaseActivity() {
                     if (isTry) {
                         initRx()
                     } else {
-                        showRetry(false, it.toString())
+                        showRetry(false, "downloadFile:$it")
                     }
                 })
     }
@@ -422,13 +422,13 @@ class PdfActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {
+        hideProgress()
         setResult(resultOk)
         finish()
     }
 
     override fun onDestroy() {
         super.onDestroy()
-        hideProgress()
         kv.encode("${savePath}_$saveName", libpdf_main_pdf.currentPage)
         disposable?.apply { if (!isDisposed) dispose() }
         UpData.destroy(this)
