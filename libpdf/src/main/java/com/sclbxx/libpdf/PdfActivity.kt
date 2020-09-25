@@ -324,6 +324,7 @@ class PdfActivity : BaseActivity() {
 
         disposable?.apply { if (!isDisposed) dispose() }
 
+
         val download = if (Build.VERSION.SDK_INT < 29) task.download(request = MySSLRequest())
         else task.download()
 
