@@ -324,8 +324,9 @@ class PdfActivity : BaseActivity() {
 
         disposable?.apply { if (!isDisposed) dispose() }
 
-        val download = if (Build.VERSION.SDK_INT < 29) task.download() else
-            task.download(request = MySSLRequest())
+        val download = if (Build.VERSION.SDK_INT < 29) task.download(request = MySSLRequest())
+        else task.download()
+
         disposable = download
                 .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
