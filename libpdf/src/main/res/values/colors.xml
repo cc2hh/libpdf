@@ -8,4 +8,5 @@
     <color name="black">#000000</color>
     <color name="background">#AAAAAA</color>
     <color name="handle_bg">#E9090909</color>
+    <color name="alph">#6666</color>
 </resources>

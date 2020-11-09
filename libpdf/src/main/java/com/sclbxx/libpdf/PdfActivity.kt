@@ -43,7 +43,7 @@ import java.util.*
  * @Date 2020/5/22 11:43
  * @version 1.0
  */
-class PdfActivity : BaseActivity() {
+class PdfActivity : BaseActivity()  {
 
     private lateinit var kv: MMKV
     private var disposable: Disposable? = null
@@ -56,8 +56,7 @@ class PdfActivity : BaseActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.libpdf_activity_pdf)
-        requestPermissions(CODE_PERMISSION_READ, "存储", Manifest.permission.WRITE_EXTERNAL_STORAGE,
-                Manifest.permission.READ_EXTERNAL_STORAGE)
+        requestPermissions(CODE_PERMISSION_READ, "存储", Manifest.permission.READ_EXTERNAL_STORAGE, Manifest.permission.WRITE_EXTERNAL_STORAGE)
 
     }
 
@@ -122,14 +121,20 @@ class PdfActivity : BaseActivity() {
             }
             // 网络文件类型
             mUrl.startsWith("http") -> {
-                if (isDown) {
-                    // 强制重新下载，删除本地pdf文件
-                    FileUtil.deleteFile(filePdf.absolutePath)
-                } else if (filePdf.exists()) {
-                    // 没要求强制重新下载，转换后的文件已存在
-                    // 直接加载pdf
-                    loadPdf(filePdf)
-                    return
+                val wvUrl = kv.decodeString(WEBVIEWURL + mUrl, "")
+                when {
+                    wvUrl != "" -> {
+                        gotoWebView(wvUrl)
+                        return
+                    }
+                    isDown -> // 强制重新下载，删除本地pdf文件
+                        FileUtil.deleteFile(filePdf.absolutePath)
+                    filePdf.exists() -> {
+                        // 没要求强制重新下载，转换后的文件已存在
+                        // 直接加载pdf
+                        loadPdf(filePdf)
+                        return
+                    }
                 }
                 tryDown(mUrl)
             }
@@ -290,22 +295,42 @@ class PdfActivity : BaseActivity() {
                         .from(this, Lifecycle.Event.ON_DESTROY)))
                 .subscribe({
                     when {
-                        it.success == 1 -> downloadFile(it.data.pdfUrl, false)
+                        it.success == 1 -> {
+                            // webview流程
+                            if (it.data.pdfUrl.contains("&ishtml=1")) {
+                                kv.encode(WEBVIEWURL + mUrl, it.data.pdfUrl)
+
+                                gotoWebView(it.data.pdfUrl)
+                            } else {
+                                downloadFile(it.data.pdfUrl, false)
+                            }
+                        }
                         // token 错误，重新获取token
                         it.error.contains("token") || it.error.contains("用户不存在") -> {
                             kv.encode(Constant.KEY_TIMETOKEN, 0L)
                             RxBusNew.getInstance().postSticky(Event(Event.CODE_MDM, true))
                         }
-                        else -> showRetry(true, "toPdf:${it.error}")
+                        else -> showRetry(true, it.error)
                     }
                 }, {
                     if ((it.toString().contains("HTTP 500") || kv.decodeBool(Constant.KEY_RETRY))) {
-                        showRetry(true, "toPdf:$it")
+                        showRetry(true, it.toString())
                     } else {
                         toast("转换异常:$it")
                         onBackPressed()
                     }
                 })
+    }
+
+
+    /**
+     *  跳转到webview流程
+     *
+     */
+    private fun gotoWebView(url: String) {
+        hideProgress()
+        WebViewActivity.start(this@PdfActivity, url)
+        finish()
     }
 
     /**
@@ -320,16 +345,13 @@ class PdfActivity : BaseActivity() {
             loadPdf(file)
             return
         }
+
         loadUrl = url
 
         disposable?.apply { if (!isDisposed) dispose() }
 
-
-        val download = if (Build.VERSION.SDK_INT < 29) task.download(request = MySSLRequest())
-        else task.download()
-
-        disposable = download
-                .subscribeOn(Schedulers.io())
+        disposable = task.download(request = MySSLRequest())
+                .subscribeOn(AndroidSchedulers.mainThread())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(onNext = {
                 }, onComplete = {
@@ -338,7 +360,7 @@ class PdfActivity : BaseActivity() {
                     if (isTry) {
                         initRx()
                     } else {
-                        showRetry(false, "downloadFile:$it")
+                        showRetry(false, it.toString())
                     }
                 })
     }
@@ -427,17 +449,17 @@ class PdfActivity : BaseActivity() {
     }
 
     override fun onBackPressed() {
-        hideProgress()
-        setResult(resultOk)
+        setResult(-1)
         finish()
     }
 
     override fun onDestroy() {
+        super.onDestroy()
+        hideProgress()
         kv.encode("${savePath}_$saveName", libpdf_main_pdf.currentPage)
         disposable?.apply { if (!isDisposed) dispose() }
         UpData.destroy(this)
         RxBusNew.getInstance().reset()
-        super.onDestroy()
     }
 
     companion object {
@@ -456,6 +478,9 @@ class PdfActivity : BaseActivity() {
         private const val CODE_PERMISSION_READ = 0
         // 默认文件后缀名
         private const val EXTENSION = "pdf"
+        // 缓存webviewUrl
+        private const val WEBVIEWURL = "webviewUrl"
+
         private var resultOk = Activity.RESULT_CANCELED
 
         /**
