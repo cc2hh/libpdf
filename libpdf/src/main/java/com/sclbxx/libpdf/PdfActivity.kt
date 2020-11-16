@@ -284,6 +284,9 @@ class PdfActivity : BaseActivity()  {
 
         val param = ToPdfParam()
         param.ossfileUrl = kv.decodeString(mUrl)
+        // 兼容旧版（未增加webview服务前），之后版本传该参数，后台好识别业务流程
+        param.ishtml=1
+
         val strParam = Gson().toJson(param)
         println("打印参数---fileToPdf:$strParam")
         val body = RequestBody.create(MediaType.parse(

@@ -9,4 +9,5 @@ package com.sclbxx.libpdf.pojo.param;
  */
 public class ToPdfParam {
     public String ossfileUrl;
+    public int ishtml;
 }
