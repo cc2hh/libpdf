@@ -500,7 +500,7 @@ class PdfActivity : BaseActivity() {
          */
         fun start(ctx: Context, url: String, path: String = FileUtil.getDirPath(ctx) + "/pdf/",
                   name: String = File(url).nameWithoutExtension, down: Boolean = false, code: Int = 0,
-                  html: Int = 0) {
+                  html: Int = 1) {
             val intent = Intent(ctx, PdfActivity::class.java)
 
             mUrl = url
@@ -513,5 +513,18 @@ class PdfActivity : BaseActivity() {
         }
 
 
+        /**
+         *  跳转
+         *
+         * @param url 文件本地路径或网络链接
+         * @param path 转换后的pdf文件本地保存路径，默认保存在 根路径/pdf/
+         * @param name 转换后的pdf文件本地保存名称，纯文件名，不带后缀
+         * @param down true：强制下载文件；false：如果文件已存在则直接打开，不存在则进行转换后下载并打开
+         * @param code 需要startActivityForResult的code值
+         */
+        fun start(ctx: Context, url: String, path: String = FileUtil.getDirPath(ctx) + "/pdf/",
+                  name: String = File(url).nameWithoutExtension, down: Boolean = false, code: Int = 0) {
+            start(ctx,url, path, name, down, code,1)
+        }
     }
 }
