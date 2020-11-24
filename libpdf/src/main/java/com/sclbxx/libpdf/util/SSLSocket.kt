@@ -1,5 +1,7 @@
 package com.sclbxx.libpdf.util
 
+import android.annotation.TargetApi
+import android.os.Build
 import io.reactivex.Flowable
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -7,12 +9,10 @@ import zlc.season.rxdownload4.request.Request
 import zlc.season.rxdownload4.request.RequestImpl
 import zlc.season.rxdownload4.request.okHttpClient
 import zlc.season.rxdownload4.request.request
+import java.net.Socket
 import java.security.SecureRandom
 import java.security.cert.X509Certificate
-import javax.net.ssl.SSLContext
-import javax.net.ssl.SSLSocketFactory
-import javax.net.ssl.TrustManager
-import javax.net.ssl.X509TrustManager
+import javax.net.ssl.*
 
 /**
  * @title: MyRequest
@@ -29,7 +29,7 @@ class MySSLRequest : Request {
     private fun createSSLSocketFactory(): SSLSocketFactory? {
         var ssfFactory: SSLSocketFactory? = null
         try {
-            val mMyTrustManager = MyTrustManager()
+            val mMyTrustManager = MyTrustManager1()
             val sc = SSLContext.getInstance("TLS")
             sc.init(null, arrayOf<TrustManager>(mMyTrustManager), SecureRandom())
             ssfFactory = sc.socketFactory
@@ -49,6 +49,27 @@ class MyTrustManager : X509TrustManager {
 
     override fun checkClientTrusted(chain: Array<out java.security.cert.X509Certificate>?, authType: String?) = Unit
     override fun checkServerTrusted(chain: Array<out java.security.cert.X509Certificate>?, authType: String?) = Unit
+
+}
+
+
+@TargetApi(Build.VERSION_CODES.N)
+class MyTrustManager1 : X509ExtendedTrustManager() {
+    override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?, socket: Socket?) {}
+
+    override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?, engine: SSLEngine?) {}
+
+    override fun checkClientTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+
+    override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?, socket: Socket?) {}
+
+    override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?, engine: SSLEngine?) {}
+
+    override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
+
+    override fun getAcceptedIssuers(): Array<X509Certificate> {
+       return arrayOf()
+    }
 
 }
 
