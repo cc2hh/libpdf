@@ -23,5 +23,5 @@ Add it in your root build.gradle at the end of repositories:
 Step 2. Add the dependency
 
 	dependencies {
-	        implementation 'com.github.cc2hh:libpdf:1.7.2'
+	        implementation 'com.github.cc2hh:libpdf:lastVersion'
 	}

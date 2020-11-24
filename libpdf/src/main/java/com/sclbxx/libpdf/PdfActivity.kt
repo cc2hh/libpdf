@@ -43,7 +43,7 @@ import java.util.*
  * @Date 2020/5/22 11:43
  * @version 1.0
  */
-class PdfActivity : BaseActivity()  {
+class PdfActivity : BaseActivity() {
 
     private lateinit var kv: MMKV
     private var disposable: Disposable? = null
@@ -285,7 +285,7 @@ class PdfActivity : BaseActivity()  {
         val param = ToPdfParam()
         param.ossfileUrl = kv.decodeString(mUrl)
         // 兼容旧版（未增加webview服务前），之后版本传该参数，后台好识别业务流程
-        param.ishtml=1
+        param.ishtml = ishtml
 
         val strParam = Gson().toJson(param)
         println("打印参数---fileToPdf:$strParam")
@@ -474,6 +474,8 @@ class PdfActivity : BaseActivity()  {
         private lateinit var saveName: String
         // 强制下载
         private var isDown: Boolean = false
+        // 是否执行webview流程，默认走
+        private var ishtml: Int = 1
 
         // 转换pdf失败默认重试次数
         private const val DEFAULT_RETRY = 5
@@ -493,15 +495,19 @@ class PdfActivity : BaseActivity()  {
          * @param path 转换后的pdf文件本地保存路径，默认保存在 根路径/pdf/
          * @param name 转换后的pdf文件本地保存名称，纯文件名，不带后缀
          * @param down true：强制下载文件；false：如果文件已存在则直接打开，不存在则进行转换后下载并打开
+         * @param code 需要startActivityForResult的code值
+         * @param html 默认 1 ，兼容webview模式；0，只执行转换服务
          */
         fun start(ctx: Context, url: String, path: String = FileUtil.getDirPath(ctx) + "/pdf/",
-                  name: String = File(url).nameWithoutExtension, down: Boolean = false, code: Int = 0) {
+                  name: String = File(url).nameWithoutExtension, down: Boolean = false, code: Int = 0,
+                  html: Int = 0) {
             val intent = Intent(ctx, PdfActivity::class.java)
 
             mUrl = url
             savePath = path
             saveName = name
             isDown = down
+            ishtml = html
             resultOk = Activity.RESULT_CANCELED
             (ctx as Activity).startActivityForResult(intent, code)
         }
