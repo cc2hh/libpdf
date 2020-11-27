@@ -24,10 +24,11 @@ import javax.net.ssl.*
 
 class MySSLRequest : Request {
 
-    private val httpClient = okHttpClient.newBuilder().sslSocketFactory(createSSLSocketFactory()).build()
+    private val httpClient = okHttpClient.newBuilder()
+            .sslSocketFactory(createSSLSocketFactory(), MyTrustManager1()).build()
 
-    private fun createSSLSocketFactory(): SSLSocketFactory? {
-        var ssfFactory: SSLSocketFactory? = null
+    private fun createSSLSocketFactory(): SSLSocketFactory {
+        var ssfFactory: SSLSocketFactory = SSLSocketFactory.getDefault() as SSLSocketFactory
         try {
             val mMyTrustManager = MyTrustManager1()
             val sc = SSLContext.getInstance("TLS")
@@ -35,9 +36,10 @@ class MySSLRequest : Request {
             ssfFactory = sc.socketFactory
         } catch (ignored: Exception) {
             ignored.printStackTrace()
+            throw ignored
+        } finally {
+            return ssfFactory
         }
-
-        return ssfFactory
     }
 
     override fun get(url: String, headers: Map<String, String>): Flowable<Response<ResponseBody>> =
@@ -68,7 +70,7 @@ class MyTrustManager1 : X509ExtendedTrustManager() {
     override fun checkServerTrusted(chain: Array<out X509Certificate>?, authType: String?) {}
 
     override fun getAcceptedIssuers(): Array<X509Certificate> {
-       return arrayOf()
+        return arrayOf()
     }
 
 }

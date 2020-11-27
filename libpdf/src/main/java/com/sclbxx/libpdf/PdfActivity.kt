@@ -5,7 +5,6 @@ import android.app.Activity
 import android.arch.lifecycle.Lifecycle
 import android.content.Context
 import android.content.Intent
-import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.view.KeyEvent
@@ -34,7 +33,6 @@ import zlc.season.rxdownload4.download
 import zlc.season.rxdownload4.file
 import zlc.season.rxdownload4.task.Task
 import java.io.File
-import java.lang.NullPointerException
 import java.util.*
 
 /**
@@ -317,7 +315,8 @@ class PdfActivity : BaseActivity() {
                     }
                 }, {
                     if ((it.toString().contains("HTTP 500") || kv.decodeBool(Constant.KEY_RETRY))) {
-                        showRetry(true, it.toString())
+//                        retryIndex = DEFAULT_RETRY
+                        showRetry(true, "远程服务繁忙...请稍后再试")
                     } else {
                         toast("转换异常:$it")
                         onBackPressed()
