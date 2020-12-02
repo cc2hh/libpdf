@@ -502,7 +502,7 @@ class PdfActivity : BaseActivity() {
                   html: Int = 1) {
             val intent = Intent(ctx, PdfActivity::class.java)
 
-            mUrl = url
+            mUrl = url.replace("https", "http")
             savePath = path
             saveName = name
             isDown = down
@@ -523,7 +523,7 @@ class PdfActivity : BaseActivity() {
          */
         fun start(ctx: Context, url: String, path: String = FileUtil.getDirPath(ctx) + "/pdf/",
                   name: String = File(url).nameWithoutExtension, down: Boolean = false, code: Int = 0) {
-            start(ctx,url, path, name, down, code,1)
+            start(ctx, url, path, name, down, code, 1)
         }
     }
 }

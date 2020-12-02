@@ -7,10 +7,12 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.IBinder;
+
 import com.jddz.service.UpdateService;
 import com.sclbxx.libpdf.pojo.Event;
 
 import java.util.concurrent.TimeUnit;
+
 import io.reactivex.Flowable;
 import io.reactivex.disposables.Disposable;
 
@@ -77,7 +79,7 @@ public class UpData {
      * 注销更新绑定
      */
     public static void destroy(Context context) {
-        if (switchServiceConnection != null) {
+        if (switchServiceConnection != null && isConnection) {
             context.unbindService(switchServiceConnection);
             switchServiceConnection = null;
             updateService = null;
