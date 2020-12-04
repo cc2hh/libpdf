@@ -359,10 +359,13 @@ class PdfActivity : BaseActivity() {
                 }, onComplete = {
                     loadPdf(file)
                 }, onError = {
-                    if (isTry) {
-                        initRx()
-                    } else {
-                        showRetry(false, it.toString())
+                    when {
+                        File(mUrl).extension.toLowerCase() == EXTENSION -> {
+                            toast("原始pdf文件下载失败，请检查原始文件是否正常")
+                            onBackPressed()
+                        }
+                        isTry -> initRx()
+                        else -> showRetry(false, it.toString())
                     }
                 })
     }
