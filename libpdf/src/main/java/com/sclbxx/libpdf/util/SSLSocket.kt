@@ -25,14 +25,16 @@ import javax.net.ssl.*
 
 class MySSLRequest : Request {
 
+    private val mMyTrustManager = if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N)
+            MyTrustManager1() else MyTrustManager()
+
     private val httpClient = okHttpClient.newBuilder()
-            .sslSocketFactory(createSSLSocketFactory(), MyTrustManager1()).build()
+            .sslSocketFactory(createSSLSocketFactory(),mMyTrustManager)
+            .build()
 
     private fun createSSLSocketFactory(): SSLSocketFactory {
         var ssfFactory: SSLSocketFactory = SSLSocketFactory.getDefault() as SSLSocketFactory
         try {
-            val mMyTrustManager = if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N)
-            MyTrustManager1() else MyTrustManager()
             val sc = SSLContext.getInstance("TLS")
             sc.init(null, arrayOf<TrustManager>(mMyTrustManager), SecureRandom())
             ssfFactory = sc.socketFactory

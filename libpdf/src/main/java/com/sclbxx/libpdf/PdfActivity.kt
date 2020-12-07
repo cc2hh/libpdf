@@ -71,8 +71,6 @@ class PdfActivity : BaseActivity() {
      *
      */
     private fun init() {
-        MMKV.initialize(this)
-        kv = MMKV.defaultMMKV()
         val file = File(mUrl)
         // txt文件单独处理，直接下载后本地显示
         if (file.extension.toLowerCase() == "txt") {
@@ -86,6 +84,8 @@ class PdfActivity : BaseActivity() {
             }
             return
         }
+        MMKV.initialize(this)
+        kv = MMKV.defaultMMKV()
         connectMdm()
         initData()
 
