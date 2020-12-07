@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.view.KeyEvent
+import android.view.View
 import com.github.barteksc.pdfviewer.util.Util
 import com.google.gson.Gson
 import com.sclbxx.libpdf.base.BaseActivity
@@ -72,9 +73,27 @@ class PdfActivity : BaseActivity() {
     private fun init() {
         MMKV.initialize(this)
         kv = MMKV.defaultMMKV()
+        val file = File(mUrl)
+        // txt文件单独处理，直接下载后本地显示
+        if (file.extension.toLowerCase() == "txt") {
+            if (mUrl.startsWith("http")) {
+                downloadTxtFile(mUrl)
+            } else if (file.exists()) {
+                showTxt(mUrl)
+            } else {
+                toast("文件不存在")
+                onBackPressed()
+            }
+            return
+        }
         connectMdm()
         initData()
 
+    }
+
+    private fun showTxt(path: String) {
+        libpdf_main_sv.visibility = View.VISIBLE
+        libpdf_main_tv.text = FileUtil.readTxt(path)
     }
 
     /**
@@ -136,16 +155,17 @@ class PdfActivity : BaseActivity() {
                 }
                 tryDown(mUrl)
             }
-            // 源文件是本地文件且不存在
-            !file.exists() -> {
-                toast("文件不存在")
-                onBackPressed()
-            }
-            // 源文件是本地文件且存在，转换后的文件已存在
-            filePdf.exists() -> loadPdf(filePdf)
-            // 源文件是本地文件且存在，已有缓存阿里云地址
-            !ossUrl.isNullOrEmpty() -> tryDown(ossUrl)
-            else -> initRx()
+            //
+//            // 源文件是本地文件且不存在
+//            !file.exists() -> {
+//                toast("文件不存在")
+//                onBackPressed()
+//            }
+//            // 源文件是本地文件且存在，转换后的文件已存在
+//            filePdf.exists() -> loadPdf(filePdf)
+//            // 源文件是本地文件且存在，已有缓存阿里云地址
+//            !ossUrl.isNullOrEmpty() -> tryDown(ossUrl)
+//            else -> initRx()
         }
     }
 
@@ -367,6 +387,33 @@ class PdfActivity : BaseActivity() {
                         isTry -> initRx()
                         else -> showRetry(false, it.toString())
                     }
+                })
+    }
+
+    /**
+     *  下载TXT文件
+     *
+     */
+    private fun downloadTxtFile(url: String) {
+        val task = Task(url = url, saveName = "$saveName.${File(url).extension}", savePath = savePath)
+        val file = task.file()
+        // 文件已存在，则直接使用
+        if (file.exists()) {
+            showTxt(file.absolutePath)
+            return
+        }
+
+        disposable?.apply { if (!isDisposed) dispose() }
+
+        disposable = task.download(request = MySSLRequest())
+                .subscribeOn(AndroidSchedulers.mainThread())
+                .observeOn(AndroidSchedulers.mainThread())
+                .subscribeBy(onNext = {
+                }, onComplete = {
+                    showTxt(file.absolutePath)
+                }, onError = {
+                    toast("下载TXT文件：$it")
+                    onBackPressed()
                 })
     }
 

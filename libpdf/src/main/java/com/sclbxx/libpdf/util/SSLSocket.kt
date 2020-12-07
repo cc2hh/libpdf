@@ -2,6 +2,7 @@ package com.sclbxx.libpdf.util
 
 import android.annotation.TargetApi
 import android.os.Build
+import com.sclbxx.libpdf.BuildConfig
 import io.reactivex.Flowable
 import okhttp3.ResponseBody
 import retrofit2.Response
@@ -30,7 +31,8 @@ class MySSLRequest : Request {
     private fun createSSLSocketFactory(): SSLSocketFactory {
         var ssfFactory: SSLSocketFactory = SSLSocketFactory.getDefault() as SSLSocketFactory
         try {
-            val mMyTrustManager = MyTrustManager1()
+            val mMyTrustManager = if (Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.N)
+            MyTrustManager1() else MyTrustManager()
             val sc = SSLContext.getInstance("TLS")
             sc.init(null, arrayOf<TrustManager>(mMyTrustManager), SecureRandom())
             ssfFactory = sc.socketFactory

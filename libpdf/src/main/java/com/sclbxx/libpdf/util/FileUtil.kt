@@ -3,6 +3,9 @@ package com.sclbxx.libpdf.util
 import android.content.Context
 import android.os.Environment
 import java.io.File
+import java.io.FileInputStream
+import java.nio.charset.Charset
+import java.nio.charset.StandardCharsets
 
 /**
  *
@@ -142,5 +145,21 @@ object FileUtil {
             }
         }
         return file.delete()
+    }
+
+    fun readTxt(txtPath: String): String {
+        var res = ""
+        try {
+            val fin = FileInputStream(txtPath)
+            val length = fin.available()
+            val buffer = ByteArray(length)
+            fin.read(buffer)
+            res = String(buffer,Charset.forName("UTF-8"))
+            fin.close()
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+
+        return res
     }
 }
