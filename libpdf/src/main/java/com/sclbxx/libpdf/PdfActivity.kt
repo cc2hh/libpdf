@@ -71,21 +71,22 @@ class PdfActivity : BaseActivity() {
      *
      */
     private fun init() {
+        MMKV.initialize(this)
+        kv = MMKV.defaultMMKV()
+
         val file = File(mUrl)
         // txt文件单独处理，直接下载后本地显示
         if (file.extension.toLowerCase() == "txt") {
-            if (mUrl.startsWith("http")) {
-                downloadTxtFile(mUrl)
-            } else if (file.exists()) {
-                showTxt(mUrl)
-            } else {
-                toast("文件不存在")
-                onBackPressed()
+            when {
+                mUrl.startsWith("http") -> downloadTxtFile(mUrl)
+                file.exists() -> showTxt(mUrl)
+                else -> {
+                    toast("文件不存在")
+                    onBackPressed()
+                }
             }
             return
         }
-        MMKV.initialize(this)
-        kv = MMKV.defaultMMKV()
         connectMdm()
         initData()
 
@@ -126,8 +127,9 @@ class PdfActivity : BaseActivity() {
         val extension = file.extension.toLowerCase()
         // 转换后的文件
         val filePdf = File("$savePath/$saveName.$EXTENSION")
-        // 源文件对应的阿里云地址
-        val ossUrl = kv.decodeString(mUrl)
+
+//        // 源文件对应的阿里云地址
+//        val ossUrl = kv.decodeString(mUrl)
 
         // 不管服务文件有没有，先拼凑链接地址尝试直接下载文件
         when {
@@ -215,28 +217,31 @@ class PdfActivity : BaseActivity() {
                 // 切换到子线程，网络请求
                 .observeOn(Schedulers.io())
                 // oss上传文件需要参数，所以先进行参数缓存
-                .map {
+//                .map {
+//                    val login = XMLUtils.readBaseInfo()
+//                    kv.encode(Constant.KEY_USERID, login.studentId)
+//                    kv.encode(Constant.KEY_SCHOOLID, login.schoolId)
+////                    kv.encode("url", login.url)
+//                    kv.encode(Constant.KEY_ACCOUNT, login.userAccount)
+//                    kv.encode(Constant.KEY_PWD, login.userPwd)
+//                    Network.URL = login.url.replace("/zhjy", "")
+//
+//                }
+//                .flatMap {
+//                    val ossUrl = kv.decodeString(mUrl)
+//                    when {
+//                        mUrl.startsWith("http") -> Flowable.just(mUrl)
+//                        !ossUrl.isNullOrEmpty() -> Flowable.just(ossUrl)
+//                        //  本地文件上传阿里云
+//                        else -> OSSPutObject.getInstance(this).connOssKey()
+//                                .map { oss -> oss.putObjectFromLocalFile(mUrl) }
+//                    }
+//                }
+                .flatMap {
                     val login = XMLUtils.readBaseInfo()
-                    kv.encode(Constant.KEY_USERID, login.studentId)
-                    kv.encode(Constant.KEY_SCHOOLID, login.schoolId)
-//                    kv.encode("url", login.url)
-                    kv.encode(Constant.KEY_ACCOUNT, login.userAccount)
-                    kv.encode(Constant.KEY_PWD, login.userPwd)
                     Network.URL = login.url.replace("/zhjy", "")
-                }
-                .flatMap {
-                    val ossUrl = kv.decodeString(mUrl)
-                    when {
-                        mUrl.startsWith("http") -> Flowable.just(mUrl)
-                        !ossUrl.isNullOrEmpty() -> Flowable.just(ossUrl)
-                        //  本地文件上传阿里云
-                        else -> OSSPutObject.getInstance(this).connOssKey()
-                                .map { oss -> oss.putObjectFromLocalFile(mUrl) }
-                    }
-                }
-                .flatMap {
                     // 缓存已上传到阿里云的源文件连接
-                    kv.encode(mUrl, it)
+//                    kv.encode(mUrl, it)
                     // token 每天头次访问时更新
                     val timeToken = kv.decodeLong(Constant.KEY_TIMETOKEN)
                     var token = kv.decodeString(Constant.KEY_TOKEN)
@@ -244,8 +249,12 @@ class PdfActivity : BaseActivity() {
                     if (Date().time - timeToken <= 10 * 60 * 60 * 1000 && !token.isNullOrEmpty()) {
                         Flowable.just(token)
                     } else {
-                        val account = kv.decodeString(Constant.KEY_ACCOUNT)
-                        val pwd = kv.decodeString(Constant.KEY_PWD)
+//                        val account = kv.decodeString(Constant.KEY_ACCOUNT)
+////                        val pwd = kv.decodeString(Constant.KEY_PWD)
+
+                        val account = login.userAccount
+                        val pwd = login.userPwd
+
                         // 检查账号或密码为空
                         if (account.isNullOrEmpty() || pwd.isNullOrEmpty()) {
                             throw Exception("账号或者密码为空")
@@ -301,7 +310,8 @@ class PdfActivity : BaseActivity() {
         disPdf?.apply { if (!isDisposed) dispose() }
 
         val param = ToPdfParam()
-        param.ossfileUrl = kv.decodeString(mUrl)
+//        param.ossfileUrl = kv.decodeString(mUrl)
+        param.ossfileUrl = mUrl
         // 兼容旧版（未增加webview服务前），之后版本传该参数，后台好识别业务流程
         param.ishtml = ishtml
 
