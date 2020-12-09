@@ -5,6 +5,7 @@ import android.app.Activity
 import android.arch.lifecycle.Lifecycle
 import android.content.Context
 import android.content.Intent
+import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
 import android.view.KeyEvent
@@ -473,25 +474,31 @@ class PdfActivity : BaseActivity() {
     private fun showRetry(type: Boolean, msg: String) {
         // 延迟2s再重试
         window.decorView.postDelayed({
-            retryIndex++
-            if (retryIndex >= DEFAULT_RETRY) {
-                toast("重试：$msg")
-                retryIndex = 0
-                AlertDialog.Builder(this)
-                        .setTitle("提示")
-                        .setMessage("文件转换中，继续等待\n $msg")
-                        .setPositiveButton("确定") { d, _ ->
-                            swichOpera(type)
-                            d.dismiss()
-                        }
-                        .setNegativeButton("退出") { d, _ ->
-                            d.dismiss()
-                            onBackPressed()
-                        }
-                        .setCancelable(false)
-                        .show()
-            } else {
-                swichOpera(type)
+
+            if (!isFinishing) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1&&isDestroyed ){
+                    return@postDelayed
+                }
+                retryIndex++
+                if (retryIndex >= DEFAULT_RETRY) {
+                    toast("重试：$msg")
+                    retryIndex = 0
+                    AlertDialog.Builder(this)
+                            .setTitle("提示")
+                            .setMessage("文件转换中，继续等待\n $msg")
+                            .setPositiveButton("确定") { d, _ ->
+                                swichOpera(type)
+                                d.dismiss()
+                            }
+                            .setNegativeButton("退出") { d, _ ->
+                                d.dismiss()
+                                onBackPressed()
+                            }
+                            .setCancelable(false)
+                            .show()
+                } else {
+                    swichOpera(type)
+                }
             }
         }, 2000)
     }
@@ -520,6 +527,7 @@ class PdfActivity : BaseActivity() {
         hideProgress()
         kv.encode("${savePath}_$saveName", libpdf_main_pdf.currentPage)
         disposable?.apply { if (!isDisposed) dispose() }
+        disPdf?.apply { if (!isDisposed) dispose() }
         UpData.destroy(this)
         RxBusNew.getInstance().reset()
     }
