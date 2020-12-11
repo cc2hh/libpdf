@@ -55,7 +55,7 @@ dependencies {
     // okhttp3
     api 'com.squareup.okhttp3:okhttp-urlconnection:3.9.0'
     api 'com.squareup.okhttp3:logging-interceptor:3.9.0'
-    api 'com.squareup.okhttp3:okhttp:3.11.0'
+    api 'com.squareup.okhttp3:okhttp:3.14.1'
 
     api 'com.uber.autodispose:autodispose-android:0.8.0'
     api 'com.uber.autodispose:autodispose-android-archcomponents:0.8.0'
@@ -69,6 +69,6 @@ dependencies {
     // 阿里云服务器oss
     api 'com.aliyun.dpa:oss-android-sdk:2.9.2'
     // 腾讯mmkv
-    api 'com.tencent:mmkv-static:1.1.2'
+    api 'com.tencent:mmkv-static:1.2.6'
 
 }
