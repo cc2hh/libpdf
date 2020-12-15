@@ -158,6 +158,11 @@ class PdfActivity : BaseActivity() {
                 }
                 tryDown(mUrl)
             }
+            // 源文件是本地pdf文件
+            extension == EXTENSION ->{
+                loadPdf(file)
+            }
+
             //
 //            // 源文件是本地文件且不存在
 //            !file.exists() -> {
