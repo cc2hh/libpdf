@@ -93,10 +93,10 @@ public class Network {
             builder.addInterceptor(mLoggingInterceptor);
             mOkHttpClient = builder
 //                    .addNetworkInterceptor(mRewriteCacheControlInterceptor)
-                    .connectTimeout(0, TimeUnit.SECONDS)
-                    .callTimeout(0,TimeUnit.SECONDS)
-                    .readTimeout(0,TimeUnit.SECONDS)
-                    .writeTimeout(0,TimeUnit.SECONDS)
+                    .connectTimeout(20, TimeUnit.SECONDS)
+                    .callTimeout(20,TimeUnit.SECONDS)
+                    .readTimeout(20,TimeUnit.SECONDS)
+                    .writeTimeout(20,TimeUnit.SECONDS)
                     .build();
 
         }

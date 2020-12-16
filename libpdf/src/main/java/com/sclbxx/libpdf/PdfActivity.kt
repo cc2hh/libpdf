@@ -107,6 +107,7 @@ class PdfActivity : BaseActivity() {
     private fun connectMdm() {
         showProgress().setOnKeyListener { _, keyCode, _ ->
             if (keyCode == KeyEvent.KEYCODE_BACK) {
+                hideProgress()
                 onBackPressed()
             }
             false
@@ -159,8 +160,12 @@ class PdfActivity : BaseActivity() {
                 tryDown(mUrl)
             }
             // 源文件是本地pdf文件
-            extension == EXTENSION ->{
+            extension == EXTENSION -> {
                 loadPdf(file)
+            }
+            else -> {
+                toast("不支持本地文件转换服务")
+                onBackPressed()
             }
 
             //
@@ -481,7 +486,7 @@ class PdfActivity : BaseActivity() {
         window.decorView.postDelayed({
 
             if (!isFinishing) {
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1&&isDestroyed ){
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN_MR1 && isDestroyed) {
                     return@postDelayed
                 }
                 retryIndex++
