@@ -157,7 +157,20 @@ class PdfActivity : BaseActivity() {
                         return
                     }
                 }
-                tryDown(mUrl)
+
+                // ppt强制走在线模式
+                if (extension.contains("ppt")) {
+                    ishtml = 1
+                    val wvUrl = kv.decodeString(WEBVIEWURL + mUrl, "")
+                    // 已有缓存在线地址直接预览，否则需要走接口请求在线地址
+                    if (wvUrl != "") {
+                        gotoWebView(wvUrl)
+                    } else {
+                        initRx()
+                    }
+                } else {
+                    tryDown(mUrl)
+                }
             }
             // 源文件是本地pdf文件
             extension == EXTENSION -> {
