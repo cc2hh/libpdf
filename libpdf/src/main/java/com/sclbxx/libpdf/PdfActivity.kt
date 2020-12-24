@@ -216,6 +216,9 @@ class PdfActivity : BaseActivity() {
      * @version 1.0
      */
     private fun initRx() {
+
+        // 重置
+        RxBusNew.getInstance().reset()
         // 接受管家服务连接信息
         RxBusNew.getInstance().toObservableSticky(Event::class.java)
                 .filter {
@@ -387,6 +390,18 @@ class PdfActivity : BaseActivity() {
         hideProgress()
         WebViewActivity.start(this@PdfActivity, url)
         finish()
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == Constant.REQUEST_CODE_ZERO) {
+            if (resultCode == Activity.RESULT_CANCELED) {
+                // webview访问失败时
+                connectMdm()
+                ishtml = 0
+                tryDown(mUrl)
+            }
+        }
     }
 
     /**

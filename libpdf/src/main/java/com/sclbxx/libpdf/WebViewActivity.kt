@@ -3,9 +3,11 @@ package com.sclbxx.libpdf
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
+import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.Message
+import android.support.v7.app.AlertDialog
 import android.util.Log
 import android.view.View
 import android.view.ViewGroup
@@ -14,6 +16,7 @@ import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.sclbxx.libpdf.base.BaseActivity
+import com.sclbxx.libpdf.base.Constant
 import kotlinx.android.synthetic.main.activity_web_view.*
 
 class WebViewActivity : BaseActivity() {
@@ -47,6 +50,31 @@ class WebViewActivity : BaseActivity() {
         wv.webViewClient = WebViewClient()
 
         wv.webChromeClient = object : WebChromeClient() {
+            override fun onReceivedTitle(view: WebView?, title: String?) {
+                super.onReceivedTitle(view, title)
+
+                // 处理网页访问失败
+                if (title?.equals(mUrl) == true) {
+                    runOnUiThread {
+                        AlertDialog.Builder(this@WebViewActivity)
+                                .setTitle("ppt在线预览失败切换到本地模式")
+                                .setMessage("访问地址：$title")
+                                .setPositiveButton("切换") { v, _ ->
+                                    v.dismiss()
+                                    code = Activity.RESULT_CANCELED
+                                    onBackPressed()
+                                }
+                                .setNegativeButton("取消") { v, _ ->
+                                    v.dismiss()
+                                    code = Activity.RESULT_OK
+                                    onBackPressed()
+                                }
+                                .setCancelable(false)
+                                .show()
+                    }
+                }
+            }
+
             override fun onProgressChanged(view: WebView?, newProgress: Int) {
                 super.onProgressChanged(view, newProgress)
                 if (newProgress >= 100) {
@@ -117,7 +145,8 @@ class WebViewActivity : BaseActivity() {
 
     override fun onBackPressed() {
         if (windowWebView == null) {
-            super.onBackPressed()
+            setResult(code)
+            finish()
         } else {
             handleCloseWebWindowRequest()
         }
@@ -128,11 +157,12 @@ class WebViewActivity : BaseActivity() {
 
         // 源文件url或路径
         private lateinit var mUrl: String
+        private var code: Int = Activity.RESULT_OK
 
         fun start(ctx: Context, url: String) {
             val intent = Intent(ctx, WebViewActivity::class.java)
             mUrl = url
-            (ctx as Activity).startActivity(intent)
+            (ctx as Activity).startActivityForResult(intent, Constant.REQUEST_CODE_ZERO)
         }
     }
 }

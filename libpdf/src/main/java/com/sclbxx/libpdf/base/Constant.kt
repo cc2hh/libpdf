@@ -22,4 +22,7 @@ object Constant {
     const val KEY_TOKEN = "token"
     // 重试标志
     const val KEY_RETRY = "retry"
+    // 跳转请求码
+    const val REQUEST_CODE_ZERO = 0
+
 }
