@@ -217,8 +217,6 @@ class PdfActivity : BaseActivity() {
      */
     private fun initRx() {
 
-        // 重置
-        RxBusNew.getInstance().reset()
         // 接受管家服务连接信息
         RxBusNew.getInstance().toObservableSticky(Event::class.java)
                 .filter {
@@ -422,7 +420,7 @@ class PdfActivity : BaseActivity() {
         disposable?.apply { if (!isDisposed) dispose() }
 
         disposable = task.download(request = MySSLRequest())
-                .subscribeOn(AndroidSchedulers.mainThread())
+                .subscribeOn(Schedulers.io())
                 .observeOn(AndroidSchedulers.mainThread())
                 .subscribeBy(onNext = {
                 }, onComplete = {
