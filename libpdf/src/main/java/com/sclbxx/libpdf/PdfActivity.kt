@@ -487,10 +487,13 @@ class PdfActivity : BaseActivity() {
                 .onPageError { page, t ->
                     hideProgress()
                     toast("pdf文件错误，加载:$page 页 $t")
+                    FileUtil.deleteFile(file.absolutePath)
+
                 }
                 .onError {
                     hideProgress()
                     toast("pdf文件损坏:$it")
+                    FileUtil.deleteFile(file.absolutePath)
                 }
                 .onLoad {
                     hideProgress()
