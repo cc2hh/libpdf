@@ -1,5 +1,6 @@
 package com.sclbxx.libpdf;
 
+import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Context;
 
@@ -15,17 +16,22 @@ public class MyProgressDialog {
     private static ProgressDialog progressDialog;
     // 是否显示对话框
     private static boolean mIsShow;
+    private static Context mContext;
 
     /**
      * 显示加载对话框
      */
     public static ProgressDialog showProgressDialog(Context context) {
         if (!mIsShow) {
-            progressDialog = new ProgressDialog(context);
-            progressDialog.setCanceledOnTouchOutside(false);
-            progressDialog.show();
-            progressDialog.setContentView(R.layout.libpdf_progress_load);
-            mIsShow = true;
+            Activity activity = (Activity) context;
+            if (!activity.isDestroyed() && !activity.isFinishing()) {
+                mContext = context;
+                progressDialog = new ProgressDialog(context);
+                progressDialog.setCanceledOnTouchOutside(false);
+                progressDialog.show();
+                progressDialog.setContentView(R.layout.libpdf_progress_load);
+                mIsShow = true;
+            }
         }
         return progressDialog;
     }
@@ -35,7 +41,11 @@ public class MyProgressDialog {
      */
     public static void dimssProgressDialog() {
         if (progressDialog != null && progressDialog.isShowing()) {
-            progressDialog.dismiss();
+            Activity activity = (Activity) mContext;
+            // 判断对话框activi是否还有效
+            if (!activity.isDestroyed() && !activity.isFinishing()) {
+                progressDialog.dismiss();
+            }
             progressDialog = null;
             mIsShow = false;
         }

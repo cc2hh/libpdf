@@ -44,8 +44,6 @@ public class UpData {
 
                 @Override
                 public void onServiceDisconnected(ComponentName name) {
-                    isConnection = false;
-                    RxBusNew.getInstance().postSticky(new Event(Event.Companion.getCODE_MDM(), false));
                     destroy(context);
                 }
 
@@ -56,6 +54,7 @@ public class UpData {
 
                 @Override
                 public void onBindingDied(ComponentName name) {
+                    destroy(context);
 //                    ToastUtils.showToast("onBindingDied");
                 }
             };
@@ -80,6 +79,7 @@ public class UpData {
      */
     public static void destroy(Context context) {
         if (switchServiceConnection != null && isConnection) {
+            isConnection = false;
             context.unbindService(switchServiceConnection);
             switchServiceConnection = null;
             updateService = null;
