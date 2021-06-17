@@ -31,7 +31,7 @@ public interface GetAPI {
     @POST("/zhjy-basedata-customer-v2.0/serverutil/getUserToken.action")
     Flowable<Token> getToken(@Body RequestBody param);
 
-    @POST("/zhjy-basedata-customer/ossremote/getOSSFileConvert.action")
+    @POST("/zhjy-basedata-customer-v2.0/ossremote/getOSSFileConvert.action")
     Flowable<ToPdf> fileToPdf(@Header("Authorization") String token,@Body RequestBody param);
 
 

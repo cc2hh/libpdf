@@ -494,6 +494,8 @@ class PdfActivity : BaseActivity() {
                     hideProgress()
                     toast("pdf文件损坏:$it")
                     FileUtil.deleteFile(file.absolutePath)
+
+
                 }
                 .onLoad {
                     hideProgress()
