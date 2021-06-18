@@ -3,7 +3,6 @@ package com.sclbxx.libpdf
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
-import android.content.DialogInterface
 import android.content.Intent
 import android.os.Bundle
 import android.os.Message
@@ -128,7 +127,7 @@ class WebViewActivity : BaseActivity() {
             }
 
             ll.addView(windowWebView)
-            wv.visibility = View.GONE
+//            wv.visibility = View.GONE
             transport.webView = windowWebView
             resultMsg.sendToTarget()
         }
@@ -139,7 +138,7 @@ class WebViewActivity : BaseActivity() {
         if (windowWebView == null) return
 
         ll.removeView(windowWebView)
-        wv.visibility = View.VISIBLE
+//        wv.visibility = View.VISIBLE
         windowWebView = null
     }
 
