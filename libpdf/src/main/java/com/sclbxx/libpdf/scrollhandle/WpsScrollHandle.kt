@@ -160,21 +160,21 @@ class WpsScrollHandle : RelativeLayout, ScrollHandle {
     }
 
     private fun setPosition(pos: Float) {
-        var pos = pos
-        if (java.lang.Float.isInfinite(pos) || java.lang.Float.isNaN(pos)) {
+        var posTem = pos
+        if (java.lang.Float.isInfinite(posTem) || java.lang.Float.isNaN(posTem)) {
             return
         }
         pdfView?.let {
             val pdfViewSize = it.height.toFloat()
-            pos -= relativeHandlerMiddle
+            posTem -= relativeHandlerMiddle
 
-            if (pos < 0) {
-                pos = 0f
-            } else if (pos > pdfViewSize - iv.height) {
-                pos = pdfViewSize - iv.height
+            if (posTem < 0) {
+                posTem = 0f
+            } else if (posTem > pdfViewSize - iv.height) {
+                posTem = pdfViewSize - iv.height
             }
 
-            iv.y = pos
+            iv.y = posTem
 
             calculateMiddle()
             invalidate()

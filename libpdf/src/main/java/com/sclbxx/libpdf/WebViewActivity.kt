@@ -8,7 +8,6 @@ import android.os.Bundle
 import android.os.Message
 import android.support.v7.app.AlertDialog
 import android.util.Log
-import android.view.View
 import android.view.ViewGroup
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
@@ -16,7 +15,7 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.sclbxx.libpdf.base.BaseActivity
 import com.sclbxx.libpdf.base.Constant
-import kotlinx.android.synthetic.main.activity_web_view.*
+import kotlinx.android.synthetic.main.activity_web_view_pdf.*
 
 class WebViewActivity : BaseActivity() {
 
@@ -25,7 +24,7 @@ class WebViewActivity : BaseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_web_view)
+        setContentView(R.layout.activity_web_view_pdf)
 
         showProgress()
 
