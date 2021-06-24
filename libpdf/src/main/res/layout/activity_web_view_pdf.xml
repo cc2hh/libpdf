@@ -13,17 +13,15 @@
         android:layout_height="match_parent" />
 
     <android.support.design.widget.AppBarLayout
-
         android:layout_width="match_parent"
-        android:layout_height="48dp"
-        android:background="@null">
+        android:layout_height="wrap_content"
+        android:background="@color/alph">
 
         <android.support.v7.widget.Toolbar
-            android:padding="8dp"
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:background="@color/alph"
+            android:background="@null"
             android:fitsSystemWindows="true"
             app:navigationIcon="@drawable/wv_back" />
     </android.support.design.widget.AppBarLayout>
