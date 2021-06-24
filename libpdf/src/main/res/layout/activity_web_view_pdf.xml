@@ -5,7 +5,6 @@
     android:id="@+id/ll"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     tools:context=".WebViewActivity">
 
     <WebView
@@ -20,9 +19,10 @@
         android:background="@null">
 
         <android.support.v7.widget.Toolbar
+            android:padding="8dp"
             android:id="@+id/toolbar"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="match_parent"
             android:background="@color/alph"
             android:fitsSystemWindows="true"
             app:navigationIcon="@drawable/wv_back" />

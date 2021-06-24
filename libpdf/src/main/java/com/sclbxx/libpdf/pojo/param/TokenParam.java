@@ -10,4 +10,9 @@ package com.sclbxx.libpdf.pojo.param;
 public class TokenParam {
     public String accountName;
     public String password;
+
+    public TokenParam(String accountName, String password) {
+        this.accountName = accountName;
+        this.password = password;
+    }
 }

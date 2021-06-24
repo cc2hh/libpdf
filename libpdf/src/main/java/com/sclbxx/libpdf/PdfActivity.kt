@@ -88,7 +88,7 @@ class PdfActivity : BaseActivity() {
             }
             return
         }
-        connectMdm()
+        showDialog()
         initData()
 
     }
@@ -104,7 +104,7 @@ class PdfActivity : BaseActivity() {
      * @Date 2020/6/23 14:27
      * @version 1.0
      */
-    private fun connectMdm() {
+    private fun showDialog() {
         showProgress().setOnKeyListener { _, keyCode, _ ->
             if (keyCode == KeyEvent.KEYCODE_BACK) {
                 hideProgress()
@@ -112,7 +112,6 @@ class PdfActivity : BaseActivity() {
             }
             false
         }
-        UpData.updateByService(this)
     }
 
     /**
@@ -180,18 +179,6 @@ class PdfActivity : BaseActivity() {
                 toast("不支持本地文件转换服务")
                 onBackPressed()
             }
-
-            //
-//            // 源文件是本地文件且不存在
-//            !file.exists() -> {
-//                toast("文件不存在")
-//                onBackPressed()
-//            }
-//            // 源文件是本地文件且存在，转换后的文件已存在
-//            filePdf.exists() -> loadPdf(filePdf)
-//            // 源文件是本地文件且存在，已有缓存阿里云地址
-//            !ossUrl.isNullOrEmpty() -> tryDown(ossUrl)
-//            else -> initRx()
         }
     }
 
@@ -217,54 +204,11 @@ class PdfActivity : BaseActivity() {
      */
     private fun initRx() {
 
-        // 接受管家服务连接信息
-        RxBusNew.getInstance().toObservableSticky(Event::class.java)
-                .filter {
-                    if (it.boolean) true
-                    else {
-                        hideProgress()
-                        AlertDialog.Builder(this)
-                                .setTitle("提示")
-                                .setMessage("尝试重连管家服务")
-                                .setPositiveButton("确定") { v, _ ->
-                                    connectMdm()
-                                    v.dismiss()
-                                }
-                                .setNegativeButton("退出") { v, _ ->
-                                    v.dismiss()
-                                    onBackPressed()
-                                }
-                                .setCancelable(false)
-                                .show()
-                        false
-                    }
-                }
+        Flowable.just(XMLUtils.readBaseInfo())
                 // 切换到子线程，网络请求
                 .observeOn(Schedulers.io())
-                // oss上传文件需要参数，所以先进行参数缓存
-//                .map {
-//                    val login = XMLUtils.readBaseInfo()
-//                    kv.encode(Constant.KEY_USERID, login.studentId)
-//                    kv.encode(Constant.KEY_SCHOOLID, login.schoolId)
-////                    kv.encode("url", login.url)
-//                    kv.encode(Constant.KEY_ACCOUNT, login.userAccount)
-//                    kv.encode(Constant.KEY_PWD, login.userPwd)
-//                    Network.URL = login.url.replace("/zhjy", "")
-//
-//                }
-//                .flatMap {
-//                    val ossUrl = kv.decodeString(mUrl)
-//                    when {
-//                        mUrl.startsWith("http") -> Flowable.just(mUrl)
-//                        !ossUrl.isNullOrEmpty() -> Flowable.just(ossUrl)
-//                        //  本地文件上传阿里云
-//                        else -> OSSPutObject.getInstance(this).connOssKey()
-//                                .map { oss -> oss.putObjectFromLocalFile(mUrl) }
-//                    }
-//                }
                 .flatMap {
-                    val login = XMLUtils.readBaseInfo()
-                    Network.URL = login.url.replace("/zhjy", "")
+                    Network.URL = it.url.replace("/zhjy", "")
                     // 缓存已上传到阿里云的源文件连接
 //                    kv.encode(mUrl, it)
                     // token 每天头次访问时更新
@@ -274,27 +218,20 @@ class PdfActivity : BaseActivity() {
                     if (Date().time - timeToken <= 10 * 60 * 60 * 1000 && !token.isNullOrEmpty()) {
                         Flowable.just(token)
                     } else {
-//                        val account = kv.decodeString(Constant.KEY_ACCOUNT)
-////                        val pwd = kv.decodeString(Constant.KEY_PWD)
 
-                        val account = login.userAccount
-                        val pwd = login.userPwd
+                        val account = it.userAccount
+                        val pwd = it.userPwd
 
                         // 检查账号或密码为空
                         if (account.isNullOrEmpty() || pwd.isNullOrEmpty()) {
                             throw Exception("账号或者密码为空")
                         }
-                        val param = TokenParam()
-                        param.accountName = account
-                        try {
-                            param.password = UpData.updateService.decryptAndEncrypt(account, pwd)
-                        } catch (e: Exception) {
-                            throw Exception("管家服务：$e")
-                        }
-                        val strParam = Gson().toJson(param)
-                        println("打印参数---getToken:$strParam")
-                        val body = RequestBody.create(MediaType.parse(
-                                "application/json; charset=utf-8"), strParam)
+
+                        val password = DesUtil.md5(DesUtil.decode(DesUtil.KEY, account, pwd))
+                        val json = Gson().toJson(TokenParam(account, password))
+                        val body = ParamUtil.getJsonParam(json)
+
+                        println("打印参数---getToken:$json")
                         Network.getAPI(this).getToken(body)
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .filter { item ->
@@ -395,7 +332,7 @@ class PdfActivity : BaseActivity() {
         if (requestCode == Constant.REQUEST_CODE_ZERO) {
             if (resultCode == Activity.RESULT_CANCELED) {
                 // webview访问失败时
-                connectMdm()
+                showDialog()
                 ishtml = 0
                 tryDown(mUrl)
             }
@@ -569,7 +506,6 @@ class PdfActivity : BaseActivity() {
         kv.encode("${savePath}_$saveName", libpdf_main_pdf.currentPage)
         disposable?.apply { if (!isDisposed) dispose() }
         disPdf?.apply { if (!isDisposed) dispose() }
-        UpData.destroy(this)
         RxBusNew.getInstance().reset()
     }
 
