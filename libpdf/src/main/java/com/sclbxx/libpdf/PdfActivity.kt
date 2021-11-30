@@ -233,6 +233,7 @@ class PdfActivity : BaseActivity() {
 
                         println("打印参数---getToken:$json")
                         Network.getAPI(this).getToken(body)
+                                .observeOn(Schedulers.io())
                                 .observeOn(AndroidSchedulers.mainThread())
                                 .filter { item ->
                                     if (item.success == 1) {

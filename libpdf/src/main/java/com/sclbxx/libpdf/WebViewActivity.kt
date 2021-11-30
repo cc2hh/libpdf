@@ -22,6 +22,7 @@ class WebViewActivity : BaseActivity() {
 
     private var windowWebView: WebView? = null
 
+    @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_web_view_pdf)
@@ -36,7 +37,7 @@ class WebViewActivity : BaseActivity() {
         webSettings.setSupportMultipleWindows(true)
 
         //设置可以访问文件
-        webSettings.allowFileAccess = true
+        webSettings.allowFileAccess = false
         //屏幕大小自适应
         webSettings.useWideViewPort = true
         webSettings.loadWithOverviewMode = true
