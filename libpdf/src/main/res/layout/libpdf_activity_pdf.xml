@@ -18,6 +18,7 @@
             android:orientation="vertical">
 
             <TextView
+                tools:text="asdasdasd"
                 android:id="@+id/libpdf_main_tv"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent" />

@@ -8,6 +8,7 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.support.v7.app.AlertDialog
+import android.support.v7.app.AppCompatActivity
 import android.view.KeyEvent
 import android.view.View
 import com.github.barteksc.pdfviewer.util.Util
@@ -75,12 +76,11 @@ class PdfActivity : BaseActivity() {
         MMKV.initialize(this)
         kv = MMKV.defaultMMKV()
 
-        val file = File(mUrl)
         // txt文件单独处理，直接下载后本地显示
-        if (file.extension.toLowerCase() == "txt") {
+        if (srcExtension == "txt") {
             when {
-                mUrl.startsWith("http") -> downloadTxtFile(mUrl)
-                file.exists() -> showTxt(mUrl)
+                mUrl.startsWith("http") -> downloadTxtFile()
+                File(mUrl).exists() -> showTxt(mUrl)
                 else -> {
                     toast("文件不存在")
                     onBackPressed()
@@ -122,11 +122,7 @@ class PdfActivity : BaseActivity() {
 
         // 初始化重试次数
         retryIndex = 0
-        // 源文件
-        val file = File(mUrl)
-        // 源文件的后缀名，转小写后
-        val extension = file.extension.toLowerCase()
-        // 转换后的文件
+
         val filePdf = File("$savePath/$saveName.$EXTENSION")
 
 //        // 源文件对应的阿里云地址
@@ -135,8 +131,8 @@ class PdfActivity : BaseActivity() {
         // 不管服务文件有没有，先拼凑链接地址尝试直接下载文件
         when {
             // 检测文件类型
-            !FileUtil.checkType(extension) -> {
-                toast("$extension 为不支持的文件类型")
+            !FileUtil.checkType(srcExtension) -> {
+                toast("$srcExtension 为不支持的文件类型")
                 onBackPressed()
             }
             // 网络文件类型
@@ -148,6 +144,7 @@ class PdfActivity : BaseActivity() {
                         return
                     }
                     isDown -> // 强制重新下载，删除本地pdf文件
+                        // 转换后的文件
                         FileUtil.deleteFile(filePdf.absolutePath)
                     filePdf.exists() -> {
                         // 没要求强制重新下载，转换后的文件已存在
@@ -158,7 +155,7 @@ class PdfActivity : BaseActivity() {
                 }
 
                 // ppt强制走在线模式
-                if (extension.contains("ppt")) {
+                if (srcExtension.contains("ppt")) {
                     ishtml = 1
                     val wvUrl = kv.decodeString(WEBVIEWURL + mUrl, "")
                     // 已有缓存在线地址直接预览，否则需要走接口请求在线地址
@@ -168,12 +165,12 @@ class PdfActivity : BaseActivity() {
                         initRx()
                     }
                 } else {
-                    tryDown(mUrl)
+                    tryDown()
                 }
             }
             // 源文件是本地pdf文件
-            extension == EXTENSION -> {
-                loadPdf(file)
+            srcExtension == EXTENSION -> {
+                loadPdf(File(mUrl))
             }
             else -> {
                 toast("不支持本地文件转换服务")
@@ -188,11 +185,11 @@ class PdfActivity : BaseActivity() {
      * @Date 2020/5/27 18:18
      * @version 1.0
      */
-    private fun tryDown(url: String) {
-        val file = File(url)
+    private fun tryDown() {
+        val file = File(mUrl)
         // 兼容后缀名大小写
-        val extension = if (file.extension.toLowerCase() == EXTENSION) file.extension else EXTENSION
-        val temp = "${url.substring(0, url.lastIndexOf("/") + 1) + file.nameWithoutExtension}.$extension"
+//        val extension = if (srcExtension == EXTENSION) file.extension else EXTENSION
+        val temp = "${mUrl.substring(0, mUrl.lastIndexOf("/") + 1) + file.nameWithoutExtension}.$EXTENSION"
         downloadFile(temp, true)
     }
 
@@ -335,7 +332,7 @@ class PdfActivity : BaseActivity() {
                 // webview访问失败时
                 showDialog()
                 ishtml = 0
-                tryDown(mUrl)
+                tryDown()
             }
         }
     }
@@ -365,7 +362,7 @@ class PdfActivity : BaseActivity() {
                     loadPdf(file)
                 }, onError = {
                     when {
-                        File(mUrl).extension.toLowerCase() == EXTENSION -> {
+                        srcExtension == EXTENSION -> {
                             toast("原始pdf文件下载失败，请检查原始文件是否正常")
                             onBackPressed()
                         }
@@ -379,8 +376,8 @@ class PdfActivity : BaseActivity() {
      *  下载TXT文件
      *
      */
-    private fun downloadTxtFile(url: String) {
-        val task = Task(url = url, saveName = "$saveName.${File(url).extension}", savePath = savePath)
+    private fun downloadTxtFile() {
+        val task = Task(url = mUrl, saveName = "$saveName.$srcExtension", savePath = savePath)
         val file = task.file()
         // 文件已存在，则直接使用
         if (file.exists()) {
@@ -412,7 +409,7 @@ class PdfActivity : BaseActivity() {
     private fun loadPdf(file: File) {
 
         // 删除源文件是本地且不是pdf的文件
-        if (!mUrl.startsWith("http") && File(mUrl).extension.toLowerCase() != EXTENSION) {
+        if (!mUrl.startsWith("http") && srcExtension != EXTENSION) {
             FileUtil.deleteFile(mUrl)
         }
 
@@ -432,8 +429,6 @@ class PdfActivity : BaseActivity() {
                     hideProgress()
                     toast("pdf文件损坏:$it")
                     FileUtil.deleteFile(file.absolutePath)
-
-
                 }
                 .onLoad {
                     hideProgress()
@@ -517,6 +512,8 @@ class PdfActivity : BaseActivity() {
         private lateinit var savePath: String
         // 保存名称
         private lateinit var saveName: String
+        // 源文件后缀名
+        private lateinit var srcExtension: String
         // 强制下载
         private var isDown: Boolean = false
         // 是否执行webview流程，默认走
@@ -543,18 +540,24 @@ class PdfActivity : BaseActivity() {
          * @param code 需要startActivityForResult的code值
          * @param html 默认 1 ，兼容webview模式；0，只执行转换服务
          */
-        fun start(ctx: Context, url: String, path: String = FileUtil.getDirPath(ctx) + "/pdf/",
-                  name: String = File(url).nameWithoutExtension, down: Boolean = false, code: Int = 0,
-                  html: Int = 1) {
-            val intent = Intent(ctx, PdfActivity::class.java)
+        fun start(activity: AppCompatActivity,
+                  url: String,
+                  path: String = FileUtil.getDirPath(activity) + "/pdf/",
+                  name: String = File(url).nameWithoutExtension,
+                  down: Boolean = false,
+                  code: Int = 0,
+                  html: Int = 1,
+                  extension: String = File(url).extension) {
+            val intent = Intent(activity, PdfActivity::class.java)
 
             mUrl = url.replace("https", "http")
             savePath = path
             saveName = name
+            srcExtension = extension.toLowerCase()
             isDown = down
             ishtml = html
             resultOk = Activity.RESULT_CANCELED
-            (ctx as Activity).startActivityForResult(intent, code)
+            activity.startActivityForResult(intent, code)
         }
 
 
@@ -567,9 +570,45 @@ class PdfActivity : BaseActivity() {
          * @param down true：强制下载文件；false：如果文件已存在则直接打开，不存在则进行转换后下载并打开
          * @param code 需要startActivityForResult的code值
          */
-        fun start(ctx: Context, url: String, path: String = FileUtil.getDirPath(ctx) + "/pdf/",
-                  name: String = File(url).nameWithoutExtension, down: Boolean = false, code: Int = 0) {
-            start(ctx, url, path, name, down, code, 1)
+        fun start(activity: AppCompatActivity,
+                  url: String,
+                  path: String = FileUtil.getDirPath(activity) + "/pdf/",
+                  name: String = File(url).nameWithoutExtension,
+                  down: Boolean = false,
+                  code: Int = 0) {
+            start(activity, url, path, name, down, code, 1)
         }
+
+
+        /**
+         *  跳转
+         *
+         * @param url 文件本地路径或网络链接
+         * @param path 转换后的pdf文件本地保存路径，默认保存在 根路径/pdf/
+         * @param name 转换后的pdf文件本地保存名称，纯文件名，不带后缀
+         * @param down true：强制下载文件；false：如果文件已存在则直接打开，不存在则进行转换后下载并打开
+         * @param code 需要startActivityForResult的code值
+         * @param html 默认 1 ，兼容webview模式；0，只执行转换服务
+         * @param extension 默认从文件本地路径或网络链接获取
+         */
+        fun startCtx(ctx: Context,
+                     url: String,
+                     path: String = FileUtil.getDirPath(ctx) + "/pdf/",
+                     name: String = File(url).nameWithoutExtension,
+                     down: Boolean = false,
+                     html: Int = 1,
+                     extension: String = File(url).extension) {
+
+            val intent = Intent(ctx, PdfActivity::class.java)
+
+            mUrl = url.replace("https", "http")
+            savePath = path
+            saveName = name
+            isDown = down
+            ishtml = html
+            srcExtension = extension.toLowerCase()
+            ctx.startActivity(intent)
+        }
+
     }
 }
