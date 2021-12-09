@@ -6,8 +6,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.os.Message
-import android.support.v7.app.AlertDialog
-import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import android.view.ViewGroup
 import android.webkit.WebChromeClient
 import android.webkit.WebSettings
@@ -29,8 +28,8 @@ class WebViewActivity : BaseActivity() {
 
         showProgress()
 
-        toolbar.setNavigationOnClickListener { onBackPressed() }
-        val webSettings = wv.settings
+        libpdf_webview_toolbar.setNavigationOnClickListener { onBackPressed() }
+        val webSettings = libpdf_webview_wv.settings
         webSettings.javaScriptEnabled = true
 
         webSettings.javaScriptCanOpenWindowsAutomatically = true
@@ -46,9 +45,9 @@ class WebViewActivity : BaseActivity() {
         webSettings.builtInZoomControls = false
         webSettings.cacheMode = WebSettings.LOAD_DEFAULT
 
-        wv.webViewClient = WebViewClient()
+        libpdf_webview_wv.webViewClient = WebViewClient()
 
-        wv.webChromeClient = object : WebChromeClient() {
+        libpdf_webview_wv.webChromeClient = object : WebChromeClient() {
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
 
@@ -86,9 +85,9 @@ class WebViewActivity : BaseActivity() {
                 return true
             }
         }
-        wv.loadUrl(mUrl)
+        libpdf_webview_wv.loadUrl(mUrl)
 
-        Log.d("WebView", mUrl)
+//        Log.d("WebView", mUrl)
     }
 
     @SuppressLint("SetJavaScriptEnabled")
@@ -126,7 +125,7 @@ class WebViewActivity : BaseActivity() {
                 }
             }
 
-            ll.addView(windowWebView)
+            libpdf_webview_rl.addView(windowWebView)
 //            wv.visibility = View.GONE
             transport.webView = windowWebView
             resultMsg.sendToTarget()
@@ -137,7 +136,7 @@ class WebViewActivity : BaseActivity() {
     private fun handleCloseWebWindowRequest() {
         if (windowWebView == null) return
 
-        ll.removeView(windowWebView)
+        libpdf_webview_rl.removeView(windowWebView)
 //        wv.visibility = View.VISIBLE
         windowWebView = null
     }

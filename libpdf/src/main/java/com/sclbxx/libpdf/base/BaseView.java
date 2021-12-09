@@ -1,7 +1,7 @@
 package com.sclbxx.libpdf.base;
 
 import android.app.ProgressDialog;
-import android.support.annotation.NonNull;
+import androidx.annotation.NonNull;
 
 /**
  * fuction: 视图基类

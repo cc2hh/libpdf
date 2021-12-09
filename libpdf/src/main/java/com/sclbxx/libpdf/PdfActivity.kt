@@ -2,13 +2,13 @@ package com.sclbxx.libpdf
 
 import android.Manifest
 import android.app.Activity
-import android.arch.lifecycle.Lifecycle
+import androidx.lifecycle.Lifecycle
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import android.support.v7.app.AlertDialog
-import android.support.v7.app.AppCompatActivity
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
 import android.view.KeyEvent
 import android.view.View
 import com.github.barteksc.pdfviewer.util.Util

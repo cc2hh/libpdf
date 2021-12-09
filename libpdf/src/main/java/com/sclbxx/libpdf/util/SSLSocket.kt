@@ -2,7 +2,6 @@ package com.sclbxx.libpdf.util
 
 import android.annotation.TargetApi
 import android.os.Build
-import com.sclbxx.libpdf.BuildConfig
 import io.reactivex.Flowable
 import okhttp3.ResponseBody
 import retrofit2.Response
