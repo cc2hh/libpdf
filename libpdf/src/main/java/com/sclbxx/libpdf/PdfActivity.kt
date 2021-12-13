@@ -601,6 +601,8 @@ class PdfActivity : BaseActivity() {
                      extension: String = File(url).extension) {
 
             val intent = Intent(ctx, PdfActivity::class.java)
+            // android 10 后Calling startActivity() from outside of an Activity  context requires the FLAG_ACTIVITY_NEW_TASK flag
+            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
             mUrl = url.replace("https", "http")
             savePath = path
@@ -608,6 +610,7 @@ class PdfActivity : BaseActivity() {
             isDown = down
             ishtml = html
             srcExtension = extension.toLowerCase()
+
             ctx.startActivity(intent)
         }
 
