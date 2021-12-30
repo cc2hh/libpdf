@@ -309,6 +309,7 @@ class PdfActivity : BaseActivity() {
 //                        retryIndex = DEFAULT_RETRY
                         showRetry(true, "远程服务繁忙...请稍后再试")
                     } else {
+
                         toast("转换异常:$it")
                         onBackPressed()
                     }
