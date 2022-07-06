@@ -1,6 +1,6 @@
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
+apply plugin: 'kotlin-android-extensions'
 
 android {
     compileSdkVersion 28
@@ -13,6 +13,10 @@ android {
 
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
 
+        ndk {
+            //设置支持的SO库架构
+            abiFilters "armeabi-v7a", "arm64-v8a"
+        }
     }
 
     buildTypes {
@@ -26,7 +30,22 @@ android {
         targetCompatibility = '1.8'
     }
 
-    kotlinOptions { jvmTarget = 1.8}
+    kotlinOptions { jvmTarget = 1.8 }
+
+
+
+//    publishing {
+//        def versionName = "1.0"
+//        publications {
+//            release(MavenPublicatin) {
+//                from components.release
+//
+//                groupId = "com.sclbxx."
+//                artifactId = "libpdf"
+//                version = versionName
+//            }
+//        }
+//    }
 }
 
 tasks.withType(JavaCompile) {
