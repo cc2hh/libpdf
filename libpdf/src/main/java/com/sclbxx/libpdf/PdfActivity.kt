@@ -588,7 +588,7 @@ class PdfActivity : BaseActivity() {
         ) {
             val intent = Intent(activity, PdfActivity::class.java)
 
-            mUrl = url.replace("https", "http")
+            mUrl = url
             savePath = path
             saveName = name
             srcExtension = extension.toLowerCase()
@@ -645,7 +645,7 @@ class PdfActivity : BaseActivity() {
             // android 10 后Calling startActivity() from outside of an Activity  context requires the FLAG_ACTIVITY_NEW_TASK flag
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
 
-            mUrl = url.replace("https", "http")
+            mUrl = url
             savePath = path
             saveName = name
             isDown = down
