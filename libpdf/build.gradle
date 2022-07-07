@@ -1,17 +1,16 @@
 apply plugin: 'com.android.library'
 apply plugin: 'kotlin-android'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'maven-publish'
 
 group = 'com.sclbxx.libpdf'
 version = '1.0'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 31
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 28
+        targetSdkVersion 31
         versionCode 11
         versionName "2.0"
 
@@ -21,6 +20,8 @@ android {
             //设置支持的SO库架构
             abiFilters "armeabi-v7a", "arm64-v8a"
         }
+
+        viewBinding.enabled =true
     }
 
     buildTypes {
@@ -35,23 +36,14 @@ android {
     }
 
     kotlinOptions { jvmTarget = 1.8 }
-
-//    publishing {
-//        def versionName = "1.0"
-//        publications {
-//            release(MavenPublicatin) {
-//                from components.release
-//
-//                groupId = "com.sclbxx."
-//                artifactId = "libpdf"
-//                version = versionName
-//            }
-//        }
-//    }
 }
 
 tasks.withType(JavaCompile) {
     options.encoding = "UTF-8"
+}
+
+configurations {
+    all*.exclude group: 'androidx.annotation', module: 'annotation'
 }
 
 dependencies {
@@ -90,7 +82,7 @@ dependencies {
     // 阿里云服务器oss
     api 'com.aliyun.dpa:oss-android-sdk:2.9.2'
     // 腾讯mmkv
-    api 'com.tencent:mmkv-static:1.2.6'
+    api'com.tencent:mmkv-static:1.2.6'
 
 }
 
@@ -100,7 +92,7 @@ afterEvaluate {
         publications {
             // Creates a Maven publication called "release".
             release(MavenPublication) {
-//                from components.release
+                from components.release
                 groupId = 'com.sclbxx.libpdf'
                 artifactId = 'libpdf'
                 version = '1.0'

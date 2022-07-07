@@ -25,7 +25,6 @@
         </LinearLayout>
     </ScrollView>
 
-
     <com.github.barteksc.pdfviewer.PDFView
         android:background="@color/background"
         android:id="@+id/libpdf_main_pdf"
