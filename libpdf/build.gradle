@@ -1,18 +1,22 @@
 apply plugin: 'com.android.library'
-apply plugin: 'kotlin-android-extensions'
 apply plugin: 'kotlin-android'
+apply plugin: 'maven-publish'
+
+group = 'com.sclbxx.libpdf'
+version = '3.0'
 
 android {
-    compileSdkVersion 28
+    compileSdkVersion 30
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 28
-        versionCode 11
-        versionName "2.0"
+        targetSdkVersion 30
+        versionCode 30
+        versionName "3.0"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
 
+        viewBinding.enabled =true
     }
 
     buildTypes {
@@ -71,4 +75,18 @@ dependencies {
     // 腾讯mmkv
     api 'com.tencent:mmkv-static:1.2.6'
 
+}
+
+afterEvaluate {
+    publishing {
+        publications {
+            // Creates a Maven publication called "release".
+            release(MavenPublication) {
+                from components.release
+                groupId = 'com.sclbxx.libpdf'
+                artifactId = 'libpdf'
+                version = '3.0'
+            }
+        }
+    }
 }

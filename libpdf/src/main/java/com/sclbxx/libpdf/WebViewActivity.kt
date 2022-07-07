@@ -14,22 +14,25 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.sclbxx.libpdf.base.BaseActivity
 import com.sclbxx.libpdf.base.Constant
-import kotlinx.android.synthetic.main.activity_web_view_pdf.*
+import com.sclbxx.libpdf.databinding.ActivityWebViewPdfBinding
 
 class WebViewActivity : BaseActivity() {
 
 
     private var windowWebView: WebView? = null
 
+    private lateinit var _bind: ActivityWebViewPdfBinding
+
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        setContentView(R.layout.activity_web_view_pdf)
+        _bind = ActivityWebViewPdfBinding.inflate(layoutInflater)
+        setContentView(_bind.root)
 
         showProgress()
 
-        libpdf_webview_toolbar.setNavigationOnClickListener { onBackPressed() }
-        val webSettings = libpdf_webview_wv.settings
+        _bind.libpdfWebviewToolbar.setNavigationOnClickListener { onBackPressed() }
+        val webSettings = _bind.libpdfWebviewWv.settings
         webSettings.javaScriptEnabled = true
 
         webSettings.javaScriptCanOpenWindowsAutomatically = true
@@ -45,9 +48,9 @@ class WebViewActivity : BaseActivity() {
         webSettings.builtInZoomControls = false
         webSettings.cacheMode = WebSettings.LOAD_DEFAULT
 
-        libpdf_webview_wv.webViewClient = WebViewClient()
+        _bind.libpdfWebviewWv.webViewClient = WebViewClient()
 
-        libpdf_webview_wv.webChromeClient = object : WebChromeClient() {
+        _bind.libpdfWebviewWv.webChromeClient = object : WebChromeClient() {
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
 
@@ -55,20 +58,20 @@ class WebViewActivity : BaseActivity() {
                 if (title?.equals(mUrl) == true) {
                     runOnUiThread {
                         AlertDialog.Builder(this@WebViewActivity)
-                                .setTitle("ppt在线预览失败切换到本地模式")
-                                .setMessage("访问地址：$title")
-                                .setPositiveButton("切换") { v, _ ->
-                                    v.dismiss()
-                                    code = Activity.RESULT_CANCELED
-                                    onBackPressed()
-                                }
-                                .setNegativeButton("取消") { v, _ ->
-                                    v.dismiss()
-                                    code = Activity.RESULT_OK
-                                    onBackPressed()
-                                }
-                                .setCancelable(false)
-                                .show()
+                            .setTitle("ppt在线预览失败切换到本地模式")
+                            .setMessage("访问地址：$title")
+                            .setPositiveButton("切换") { v, _ ->
+                                v.dismiss()
+                                code = Activity.RESULT_CANCELED
+                                onBackPressed()
+                            }
+                            .setNegativeButton("取消") { v, _ ->
+                                v.dismiss()
+                                code = Activity.RESULT_OK
+                                onBackPressed()
+                            }
+                            .setCancelable(false)
+                            .show()
                     }
                 }
             }
@@ -80,12 +83,17 @@ class WebViewActivity : BaseActivity() {
                 }
             }
 
-            override fun onCreateWindow(view: WebView?, isDialog: Boolean, isUserGesture: Boolean, resultMsg: Message?): Boolean {
+            override fun onCreateWindow(
+                view: WebView?,
+                isDialog: Boolean,
+                isUserGesture: Boolean,
+                resultMsg: Message?
+            ): Boolean {
                 handleCreateWebWindowRequest(resultMsg)
                 return true
             }
         }
-        libpdf_webview_wv.loadUrl(mUrl)
+        _bind.libpdfWebviewWv.loadUrl(mUrl)
 
 //        Log.d("WebView", mUrl)
     }
@@ -98,8 +106,9 @@ class WebViewActivity : BaseActivity() {
             val transport = resultMsg.obj as WebView.WebViewTransport
             windowWebView = WebView(this)
             windowWebView?.layoutParams = ViewGroup.LayoutParams(
-                    ViewGroup.LayoutParams.MATCH_PARENT,
-                    ViewGroup.LayoutParams.MATCH_PARENT)
+                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.MATCH_PARENT
+            )
 
             val settings = windowWebView?.settings
 
@@ -125,7 +134,7 @@ class WebViewActivity : BaseActivity() {
                 }
             }
 
-            libpdf_webview_rl.addView(windowWebView)
+            _bind.libpdfWebviewRl.addView(windowWebView)
 //            wv.visibility = View.GONE
             transport.webView = windowWebView
             resultMsg.sendToTarget()
@@ -136,7 +145,7 @@ class WebViewActivity : BaseActivity() {
     private fun handleCloseWebWindowRequest() {
         if (windowWebView == null) return
 
-        libpdf_webview_rl.removeView(windowWebView)
+        _bind.libpdfWebviewRl.removeView(windowWebView)
 //        wv.visibility = View.VISIBLE
         windowWebView = null
     }
