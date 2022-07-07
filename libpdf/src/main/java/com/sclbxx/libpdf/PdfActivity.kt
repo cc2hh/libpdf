@@ -586,7 +586,7 @@ class PdfActivity : BaseActivity() {
         ) {
             val intent = Intent(activity, PdfActivity::class.java)
 
-            mUrl = url.replace("https", "http")
+            mUrl = url
             savePath = path
             saveName = name
             srcExtension = extension.toLowerCase()
@@ -641,7 +641,7 @@ class PdfActivity : BaseActivity() {
 
             val intent = Intent(ctx, PdfActivity::class.java)
 
-            mUrl = url.replace("https", "http")
+            mUrl = url
             savePath = path
             saveName = name
             isDown = down
