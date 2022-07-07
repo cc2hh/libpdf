@@ -3,14 +3,14 @@ apply plugin: 'kotlin-android'
 apply plugin: 'maven-publish'
 
 group = 'com.sclbxx.libpdf'
-version = '1.0'
+version = '1.9'
 
 android {
-    compileSdkVersion 31
+    compileSdkVersion 30
 
     defaultConfig {
         minSdkVersion 16
-        targetSdkVersion 31
+        targetSdkVersion 30
         versionCode 11
         versionName "2.0"
 
@@ -95,7 +95,7 @@ afterEvaluate {
                 from components.release
                 groupId = 'com.sclbxx.libpdf'
                 artifactId = 'libpdf'
-                version = '1.0'
+                version = '1.9'
             }
         }
     }
