@@ -153,7 +153,7 @@ class PdfActivity : BaseActivity() {
                         if (mUrl.endsWith("ppt")) {
                             gotoWebView(mUrl)
                         } else {
-                            tryDown()
+                            downloadFile(mUrl, false)
                         }
                         return
                     }
