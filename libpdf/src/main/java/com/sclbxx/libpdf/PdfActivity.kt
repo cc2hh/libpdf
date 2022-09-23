@@ -15,7 +15,6 @@ import com.github.barteksc.pdfviewer.util.Util
 import com.google.gson.Gson
 import com.sclbxx.libpdf.base.BaseActivity
 import com.sclbxx.libpdf.base.Constant
-import com.sclbxx.libpdf.databinding.LibpdfActivityPdfBinding
 import com.sclbxx.libpdf.http.Network
 import com.sclbxx.libpdf.pojo.Event
 import com.sclbxx.libpdf.pojo.param.ToPdfParam
@@ -30,6 +29,7 @@ import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.Disposable
 import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.schedulers.Schedulers
+import kotlinx.android.synthetic.main.libpdf_activity_pdf.*
 import okhttp3.MediaType
 import okhttp3.RequestBody
 import zlc.season.rxdownload4.download
@@ -55,13 +55,16 @@ class PdfActivity : BaseActivity() {
 
     // 转换pdf失败重试次数
     private var retryIndex = 0
-    private lateinit var _bind: LibpdfActivityPdfBinding
+//    private lateinit var _bind: LibpdfActivityPdfBinding
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        _bind = LibpdfActivityPdfBinding.inflate(layoutInflater)
-        setContentView(_bind.root)
+//        _bind = LibpdfActivityPdfBinding.inflate(layoutInflater)
+//        setContentView(_bind.root)
+
+        setContentView(R.layout.libpdf_activity_pdf)
+
         requestPermissions(
             CODE_PERMISSION_READ,
             "存储",
@@ -104,8 +107,8 @@ class PdfActivity : BaseActivity() {
     }
 
     private fun showTxt(path: String) {
-        _bind.libpdfMainSv.visibility = View.VISIBLE
-        _bind.libpdfMainTv.text = FileUtil.readTxt(path)
+        libpdf_main_sv.visibility = View.VISIBLE
+        libpdf_main_tv.text = FileUtil.readTxt(path)
     }
 
     /**
@@ -441,7 +444,7 @@ class PdfActivity : BaseActivity() {
 
         // 缓存的该文件之前关闭时页码，默认0
         val cPager = kv.decodeInt("${savePath}_$saveName")
-        _bind.libpdfMainPdf.fromFile(file)
+        libpdf_main_pdf.fromFile(file)
             .pageSnap(true)
             .defaultPage(cPager)
             .linkHandler { }
@@ -525,7 +528,7 @@ class PdfActivity : BaseActivity() {
     override fun onDestroy() {
         super.onDestroy()
         hideProgress()
-        kv.encode("${savePath}_$saveName", _bind.libpdfMainPdf.currentPage)
+        kv.encode("${savePath}_$saveName", libpdf_main_pdf.currentPage)
         disposable?.apply { if (!isDisposed) dispose() }
         disPdf?.apply { if (!isDisposed) dispose() }
         RxBusNew.getInstance().reset()

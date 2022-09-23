@@ -15,25 +15,22 @@ import android.webkit.WebView
 import android.webkit.WebViewClient
 import com.sclbxx.libpdf.base.BaseActivity
 import com.sclbxx.libpdf.base.Constant
-import com.sclbxx.libpdf.databinding.ActivityWebViewPdfBinding
+import kotlinx.android.synthetic.main.activity_web_view_pdf.*
 
 class WebViewActivity : BaseActivity() {
 
 
     private var windowWebView: WebView? = null
-    private lateinit var _bind: ActivityWebViewPdfBinding
 
     @SuppressLint("SetJavaScriptEnabled")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        _bind = ActivityWebViewPdfBinding.inflate(layoutInflater)
-        setContentView(_bind.root)
-
+        setContentView(R.layout.activity_web_view_pdf)
         showProgress()
 
-        _bind.toolbar.setNavigationOnClickListener { onBackPressed() }
-        val webSettings = _bind.wv.settings
+        toolbar.setNavigationOnClickListener { onBackPressed() }
+        val webSettings = wv.settings
         webSettings.javaScriptEnabled = true
 
         webSettings.javaScriptCanOpenWindowsAutomatically = true
@@ -49,9 +46,9 @@ class WebViewActivity : BaseActivity() {
         webSettings.builtInZoomControls = false
         webSettings.cacheMode = WebSettings.LOAD_DEFAULT
 
-        _bind.wv.webViewClient = WebViewClient()
+        wv.webViewClient = WebViewClient()
 
-        _bind.wv.webChromeClient = object : WebChromeClient() {
+        wv.webChromeClient = object : WebChromeClient() {
             override fun onReceivedTitle(view: WebView?, title: String?) {
                 super.onReceivedTitle(view, title)
 
@@ -94,7 +91,7 @@ class WebViewActivity : BaseActivity() {
                 return true
             }
         }
-        _bind.wv.loadUrl(mUrl)
+        wv.loadUrl(mUrl)
 
         Log.d("WebView", mUrl)
     }
@@ -134,7 +131,7 @@ class WebViewActivity : BaseActivity() {
                 }
             }
 
-            _bind.ll.addView(windowWebView)
+            ll.addView(windowWebView)
 //            wv.visibility = View.GONE
             transport.webView = windowWebView
             resultMsg.sendToTarget()
@@ -145,7 +142,7 @@ class WebViewActivity : BaseActivity() {
     private fun handleCloseWebWindowRequest() {
         if (windowWebView == null) return
 
-        _bind.ll.removeView(windowWebView)
+        ll.removeView(windowWebView)
 //        wv.visibility = View.VISIBLE
         windowWebView = null
     }
