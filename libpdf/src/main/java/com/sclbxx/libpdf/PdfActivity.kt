@@ -149,10 +149,10 @@ class PdfActivity : BaseActivity() {
             mUrl.startsWith("http") -> {
                 val wvUrl = kv.decodeString(WEBVIEWURL + mUrl, "")
                 when {
-                    mUrl.contains("ow365.cn") -> {
-                        gotoWebView(mUrl)
-                        return
-                    }
+//                    mUrl.contains("ow365.cn") -> {
+//                        gotoWebView(mUrl)
+//                        return
+//                    }
                     wvUrl != "" -> {
                         gotoWebView(wvUrl)
                         return
@@ -591,7 +591,7 @@ class PdfActivity : BaseActivity() {
             mUrl = url
             savePath = path
             saveName = name
-            srcExtension = extension.toLowerCase()
+            srcExtension = extension.lowercase()
             isDown = down
             ishtml = html
             resultOk = Activity.RESULT_CANCELED
@@ -650,7 +650,7 @@ class PdfActivity : BaseActivity() {
             saveName = name
             isDown = down
             ishtml = html
-            srcExtension = extension.toLowerCase()
+            srcExtension = extension.lowercase()
 
             ctx.startActivity(intent)
         }

@@ -41,7 +41,7 @@ class MySSLRequest : Request {
             ignored.printStackTrace()
             throw ignored
         } finally {
-            return ssfFactory
+            return  ssfFactory
         }
     }
 

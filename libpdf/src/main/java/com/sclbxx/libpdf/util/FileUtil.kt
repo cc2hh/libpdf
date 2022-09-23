@@ -113,7 +113,7 @@ object FileUtil {
      *
      */
     fun checkType(extension: String): Boolean {
-        return when (extension.toLowerCase()) {
+        return when (extension.lowercase()) {
             "pdf", "txt", "doc", "docx", "xls", "xlsx", "xml", "ppt", "pptx", "log" -> true
             else -> false
         }
@@ -135,7 +135,7 @@ object FileUtil {
         if (file.isDirectory) {
             return false
         }
-        for (f in file.listFiles()) {
+        for (f in file.listFiles()!!) {
             if (f.isFile) {
                 f.delete()
             } else if (f.isDirectory) {
