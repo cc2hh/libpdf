@@ -74,7 +74,6 @@ dependencies {
     api 'com.aliyun.dpa:oss-android-sdk:2.9.2'
     // 腾讯mmkv
     api 'com.tencent:mmkv-static:1.2.6'
-
 }
 
 afterEvaluate {

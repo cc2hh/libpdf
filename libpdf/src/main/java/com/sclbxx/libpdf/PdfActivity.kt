@@ -149,10 +149,14 @@ class PdfActivity : BaseActivity() {
             mUrl.startsWith("http") -> {
                 val wvUrl = kv.decodeString(WEBVIEWURL + mUrl, "")
                 when {
-//                    mUrl.contains("ow365.cn") -> {
-//                        gotoWebView(mUrl)
-//                        return
-//                    }
+                    mUrl.contains("ow365.cn") -> {
+                        if (mUrl.endsWith("ppt")) {
+                            gotoWebView(mUrl)
+                        } else {
+                            tryDown()
+                        }
+                        return
+                    }
                     wvUrl != "" -> {
                         gotoWebView(wvUrl)
                         return
