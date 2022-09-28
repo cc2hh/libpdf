@@ -160,7 +160,7 @@ class PdfActivity : BaseActivity() {
                             if (startIndex < 0) {
                                 downloadFile(mUrl, false)
                             } else {
-                                tryDown(mUrl.substring(startIndex))
+                                tryDown(mUrl.substring(startIndex+ 5))
                             }
                         }
                         return
@@ -400,6 +400,7 @@ class PdfActivity : BaseActivity() {
                 loadPdf(file)
             }, onError = {
                 when {
+                    mUrl.contains("ow365.cn") && isTry -> downloadFile(mUrl, false)
                     srcExtension == EXTENSION -> {
                         toast("原始pdf文件下载失败，请检查原始文件是否正常")
                         onBackPressed()
