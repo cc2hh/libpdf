@@ -153,7 +153,16 @@ class PdfActivity : BaseActivity() {
                 val wvUrl = kv.decodeString(WEBVIEWURL + mUrl, "")
                 when {
                     mUrl.contains("ow365.cn") -> {
-                        gotoWebView(mUrl)
+                        if (mUrl.contains("ishtml=1")) {
+                            gotoWebView(mUrl)
+                        } else {
+                            val startIndex = mUrl.indexOf("furl=")
+                            if (startIndex < 0) {
+                                downloadFile(mUrl, false)
+                            } else {
+                                tryDown(mUrl.substring(startIndex))
+                            }
+                        }
                         return
                     }
                     wvUrl != "" -> {
@@ -202,12 +211,12 @@ class PdfActivity : BaseActivity() {
      * @Date 2020/5/27 18:18
      * @version 1.0
      */
-    private fun tryDown() {
-        val file = File(mUrl)
+    private fun tryDown(url:String= mUrl) {
+        val file = File(url)
         // 兼容后缀名大小写
 //        val extension = if (srcExtension == EXTENSION) file.extension else EXTENSION
         val temp =
-            "${mUrl.substring(0, mUrl.lastIndexOf("/") + 1) + file.nameWithoutExtension}.$EXTENSION"
+            "${url.substring(0, url.lastIndexOf("/") + 1) + file.nameWithoutExtension}.$EXTENSION"
         downloadFile(temp, true)
     }
 
