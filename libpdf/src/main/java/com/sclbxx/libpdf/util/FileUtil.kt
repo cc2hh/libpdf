@@ -22,11 +22,12 @@ object FileUtil {
      */
     fun getDirPath(ctx: Context): String {
         return if (Environment.MEDIA_MOUNTED == Environment
-                        .getExternalStorageState() || !Environment.isExternalStorageRemovable()) {
-            Environment.getExternalStorageDirectory().path
+                .getExternalStorageState() || !Environment.isExternalStorageRemovable()
+        ) {
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS).path + "/huidao/"
         } else {
             // 返回应用内部缓存路径
-            ctx.cacheDir.path
+            ctx.cacheDir.path + "/huidao/"
         }
     }
 

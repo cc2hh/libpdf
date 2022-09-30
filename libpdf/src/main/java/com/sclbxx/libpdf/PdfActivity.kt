@@ -2,15 +2,15 @@ package com.sclbxx.libpdf
 
 import android.Manifest
 import android.app.Activity
-import androidx.lifecycle.Lifecycle
 import android.content.Context
 import android.content.Intent
 import android.os.Build
 import android.os.Bundle
-import androidx.appcompat.app.AlertDialog
-import androidx.appcompat.app.AppCompatActivity
 import android.view.KeyEvent
 import android.view.View
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.Lifecycle
 import com.github.barteksc.pdfviewer.util.Util
 import com.google.gson.Gson
 import com.sclbxx.libpdf.base.BaseActivity
@@ -150,10 +150,15 @@ class PdfActivity : BaseActivity() {
                 val wvUrl = kv.decodeString(WEBVIEWURL + mUrl, "")
                 when {
                     mUrl.contains("ow365.cn") -> {
-                        if (mUrl.endsWith("ppt")) {
+                        if (mUrl.contains("ishtml=1")) {
                             gotoWebView(mUrl)
                         } else {
-                            downloadFile(mUrl, false)
+                            val startIndex = mUrl.indexOf("furl=")
+                            if (startIndex < 0) {
+                                downloadFile(mUrl, false)
+                            } else {
+                                tryDown(mUrl.substring(startIndex + 5))
+                            }
                         }
                         return
                     }
@@ -203,12 +208,12 @@ class PdfActivity : BaseActivity() {
      * @Date 2020/5/27 18:18
      * @version 1.0
      */
-    private fun tryDown() {
-        val file = File(mUrl)
+    private fun tryDown(url:String=mUrl) {
+        val file = File(url)
         // 兼容后缀名大小写
 //        val extension = if (srcExtension == EXTENSION) file.extension else EXTENSION
         val temp =
-            "${mUrl.substring(0, mUrl.lastIndexOf("/") + 1) + file.nameWithoutExtension}.$EXTENSION"
+            "${url.substring(0, url.lastIndexOf("/") + 1) + file.nameWithoutExtension}.$EXTENSION"
         downloadFile(temp, true)
     }
 
@@ -394,6 +399,7 @@ class PdfActivity : BaseActivity() {
                 loadPdf(file)
             }, onError = {
                 when {
+                    mUrl.contains("ow365.cn") && isTry -> downloadFile(mUrl, false)
                     srcExtension == EXTENSION -> {
                         toast("原始pdf文件下载失败，请检查原始文件是否正常")
                         onBackPressed()
